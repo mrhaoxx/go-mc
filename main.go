@@ -27,9 +27,10 @@ import (
 	"github.com/mrhaoxx/go-mc/chat"
 	"github.com/mrhaoxx/go-mc/game"
 	"github.com/mrhaoxx/go-mc/server"
+	"github.com/mrhaoxx/go-mc/world"
 )
 
-var isDebug = flag.Bool("debug", false, "Enable debug log output")
+var isDebug = flag.Bool("debug", true, "Enable debug log output")
 
 func main() {
 	flag.Parse()
@@ -70,6 +71,8 @@ func main() {
 		return
 	}
 
+	gp := game.NewGame(logger, config, playerList, serverInfo)
+
 	s := server.Server{
 		Logger: zap.NewStdLog(logger),
 		ListPingHandler: struct {
@@ -82,7 +85,10 @@ func main() {
 			Threshold:            config.NetworkCompressionThreshold,
 			LoginChecker:         playerList, // playerList implement LoginChecker interface to limit the maximum number of online players
 		},
-		GamePlay: game.NewGame(logger, config, playerList, serverInfo),
+		ConfigHandler: &server.Configurations{
+			Registries: world.NetworkCodec,
+		},
+		GamePlay: gp,
 	}
 	logger.Info("Start listening", zap.String("address", config.ListenAddress))
 	err = s.Listen(config.ListenAddress)

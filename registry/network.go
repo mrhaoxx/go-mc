@@ -91,3 +91,39 @@ func (reg *Registry[E]) ReadTagsFrom(r io.Reader) (int64, error) {
 	}
 	return n, nil
 }
+
+func (r *Registry[E]) WriteTo(w io.Writer) (n int64, err error) {
+	var Len pk.VarInt = pk.VarInt(len(r.values))
+	_n, err := Len.WriteTo(w)
+	n += _n
+	if err != nil {
+		return
+	}
+
+	for key, id := range r.keys {
+		_n, err = pk.Identifier(key).WriteTo(w)
+		if err != nil {
+			return
+		}
+		n += _n
+
+		var HasData pk.Boolean = pk.Boolean(id != -1)
+		_n, err = HasData.WriteTo(w)
+		if err != nil {
+			return
+		}
+		n += _n
+
+		if HasData {
+			// Always write as NBTField, since we can't type assert on type parameter E
+			_n, err = pk.NBT(r.values[id]).WriteTo(w)
+			if err != nil {
+				return
+			}
+			n += _n
+		}
+
+	}
+
+	return
+}

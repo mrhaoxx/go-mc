@@ -28,7 +28,7 @@ func (m *PackedMessageBody) WriteTo(w io.Writer) (n int64, err error) {
 		pk.String(m.PlainMsg),
 		pk.Long(m.Timestamp.UnixMilli()),
 		pk.Long(m.Salt),
-		pk.Array(m.LastSeen),
+		// pk.Array(m.LastSeen),
 	}.WriteTo(w)
 }
 

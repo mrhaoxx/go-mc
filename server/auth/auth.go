@@ -83,6 +83,7 @@ func encryptionRequest(conn *net.Conn, publicKey, verifyToken []byte) error {
 		pk.String(""),
 		pk.ByteArray(publicKey),
 		pk.ByteArray(verifyToken),
+		pk.Boolean(true),
 	))
 }
 

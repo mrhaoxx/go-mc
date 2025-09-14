@@ -8,8 +8,8 @@ import (
 )
 
 type Decoration struct {
-	TranslationKey string   `nbt:"translation_key"`
-	Parameters     []string `nbt:"parameters"`
+	TranslationKey string   `nbt:"translation_key" json:"translation_key"`
+	Parameters     []string `nbt:"parameters" json:"parameters"`
 	Style          struct {
 		Bold          bool   `nbt:"bold,omitempty"`
 		Italic        bool   `nbt:"italic,omitempty"`

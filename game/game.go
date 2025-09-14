@@ -67,6 +67,18 @@ func NewGame(log *zap.Logger, config Config, pingList *server.PlayerList, server
 	})
 	go keepAlive.Run(context.TODO())
 
+	g := globalChat{
+		log:           log.Named("chat"),
+		players:       &pl,
+		chatTypeCodec: &world.NetworkCodec.ChatType,
+	}
+
+	go func() {
+		for tick := range time.Tick(time.Second * 1) {
+			g.broadcastSystemChat(chat.Text("Server is running for "+tick.Format("2006-01-02 15:04:05")), false)
+		}
+	}()
+
 	return &Game{
 		log: log.Named("game"),
 
@@ -76,11 +88,7 @@ func NewGame(log *zap.Logger, config Config, pingList *server.PlayerList, server
 		playerProvider: playerProvider,
 		overworld:      overworld,
 
-		globalChat: globalChat{
-			log:           log.Named("chat"),
-			players:       &pl,
-			chatTypeCodec: &world.NetworkCodec,
-		},
+		globalChat: g,
 		playerList: &pl,
 	}
 }
@@ -145,7 +153,7 @@ func (g *Game) AcceptPlayer(name string, id uuid.UUID, profilePubKey *user.Publi
 	defer logger.Info("Player left")
 
 	c.SendLogin(g.overworld, p)
-	c.SendServerData(g.serverInfo.Description(), g.serverInfo.FavIcon(), g.config.EnforceSecureProfile)
+	// c.SendServerData(g.serverInfo.Description(), g.serverInfo.FavIcon(), g.config.EnforceSecureProfile)
 
 	joinMsg := chat.TranslateMsg("multiplayer.player.joined", chat.Text(p.Name)).SetColor(chat.Yellow)
 	leftMsg := chat.TranslateMsg("multiplayer.player.left", chat.Text(p.Name)).SetColor(chat.Yellow)

@@ -22,3 +22,5 @@ data/packetid/generate.go
 .vscode/
 
 go-mc
+
+overworld/

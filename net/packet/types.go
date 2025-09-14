@@ -79,6 +79,9 @@ type (
 
 	// FixedBitSet is a fixed size BitSet
 	FixedBitSet []byte
+
+	// PrefixedArray is a generic type for arrays prefixed with their length.
+	PrefixedArray[E any] []E
 )
 
 const (
@@ -677,4 +680,32 @@ func (f FixedBitSet) Set(index int, value bool) {
 
 func (f FixedBitSet) Len() int {
 	return len(f) * 8
+}
+
+func (p PrefixedArray[E]) WriteTo(w io.Writer) (n int64, err error) {
+	var Len VarInt = VarInt(len(p))
+	n, err = Len.WriteTo(w)
+	if err != nil {
+		return
+	}
+	for _, v := range p {
+		n, err = any(v).(FieldEncoder).WriteTo(w)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (p *PrefixedArray[E]) ReadFrom(r io.Reader) (n int64, err error) {
+	var Len VarInt
+	n, err = Len.ReadFrom(r)
+	if err != nil {
+		return
+	}
+	for i := 0; i < int(Len); i++ {
+		var v E
+		n, err = any(&v).(FieldDecoder).ReadFrom(r)
+	}
+	return
 }

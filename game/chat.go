@@ -38,7 +38,6 @@ type globalChat struct {
 }
 
 func (g *globalChat) broadcastSystemChat(msg chat.Message, overlay bool) {
-	g.log.Info(msg.String(), zap.Bool("overlay", overlay))
 	g.players.pingList.Range(func(c server.PlayerListClient, _ server.PlayerSample) {
 		c.(*client.Client).SendSystemChat(msg, overlay)
 	})

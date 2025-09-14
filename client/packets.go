@@ -19,6 +19,7 @@ package client
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"sync/atomic"
 	"unsafe"
 
@@ -61,43 +62,63 @@ func (c *Client) SendDisconnect(reason chat.Message) {
 	c.SendPacket(packetid.ClientboundDisconnect, reason)
 }
 
+//			pk.Byte(p.Gamemode),
+//			pk.Array([]pk.Identifier{
+//		pk.Identifier(w.Name()),
+//	}),
+//
+// pk.NBT(world.NetworkCodec),
+// pk.Identifier(w.Name()),
+// pk.Long(binary.BigEndian.Uint64(hashedSeed[:8])),
+// pk.VarInt(0),              // Max players (ignored by client)
+// pk.VarInt(p.ViewDistance), // View Distance
+// pk.VarInt(p.ViewDistance), // Simulation Distance
+// pk.Boolean(false),         // Reduced Debug Info
+// pk.Boolean(false),         // Enable respawn screen
+// pk.Boolean(false),         // Is Debug
+// pk.Boolean(false),         // Is Flat
+// pk.Boolean(false),         // Has Last Death Location
 func (c *Client) SendLogin(w *world.World, p *world.Player) {
+	zap.L().Info("SendLogin", zap.Int32("eid", p.EntityID), zap.Int32("viewDistance", p.ViewDistance))
 	hashedSeed := w.HashedSeed()
 	c.SendPacket(
 		packetid.ClientboundLogin,
 		pk.Int(p.EntityID),
 		pk.Boolean(false), // Is Hardcore
-		pk.Byte(p.Gamemode),
-		pk.Byte(-1),
 		pk.Array([]pk.Identifier{
 			pk.Identifier(w.Name()),
-		}),
-		pk.NBT(world.NetworkCodec),
-		pk.Identifier("minecraft:overworld"),
-		pk.Identifier(w.Name()),
-		pk.Long(binary.BigEndian.Uint64(hashedSeed[:8])),
-		pk.VarInt(0),              // Max players (ignored by client)
-		pk.VarInt(p.ViewDistance), // View Distance
-		pk.VarInt(p.ViewDistance), // Simulation Distance
-		pk.Boolean(false),         // Reduced Debug Info
-		pk.Boolean(false),         // Enable respawn screen
-		pk.Boolean(false),         // Is Debug
-		pk.Boolean(false),         // Is Flat
-		pk.Boolean(false),         // Has Last Death Location
+		}), // Dimension Name
+		pk.VarInt(20),                        // Max players (ignored by client)
+		pk.VarInt(p.ViewDistance),            // View Distance
+		pk.VarInt(p.ViewDistance),            // Simulation Distance
+		pk.Boolean(false),                    // Reduced Debug Info
+		pk.Boolean(true),                     // Enable respawn screen
+		pk.Boolean(false),                    // Do Limit Crafting
+		pk.VarInt(0),                         // World Info Dimension Type
+		pk.Identifier("minecraft:overworld"), // World Info Dimension Name
+		pk.Long(binary.BigEndian.Uint64(hashedSeed[:8])), // World Info Hashed Seed
+		pk.Byte(1),        // World Info Gamemode
+		pk.Byte(0),        // World Info Previous Gamemode
+		pk.Boolean(false), // World Info Is Debug
+		pk.Boolean(false), // World Info Is Flat
+		pk.Boolean(false), // World Info Has Last Death Location
+		pk.VarInt(40),
+		pk.VarInt(40),
+		pk.Boolean(true),
 	)
 }
 
-func (c *Client) SendServerData(motd *chat.Message, favIcon string, enforceSecureProfile bool) {
-	c.SendPacket(
-		packetid.ClientboundServerData,
-		motd,
-		pk.Option[pk.String, *pk.String]{
-			Has: favIcon != "",
-			Val: pk.String(favIcon),
-		},
-		pk.Boolean(enforceSecureProfile),
-	)
-}
+// func (c *Client) SendServerData(motd *chat.Message, favIcon string, enforceSecureProfile bool) {
+// 	c.SendPacket(
+// 		packetid.ClientboundServerData,
+// 		motd,
+// 		pk.Option[pk.String, *pk.String]{
+// 			Has: false,
+// 			Val: pk.String(favIcon),
+// 		},
+// 		// pk.Boolean(enforceSecureProfile),
+// 	)
+// }
 
 // Actions of [SendPlayerInfoUpdate]
 const (
@@ -191,6 +212,7 @@ func (c *Client) SendAddPlayer(p *world.Player) {
 }
 
 func (c *Client) SendMoveEntitiesPos(eid int32, delta [3]int16, onGround bool) {
+	zap.L().Info("SendMoveEntitiesPos", zap.Int32("eid", eid), zap.Int16("delta[0]", delta[0]), zap.Int16("delta[1]", delta[1]), zap.Int16("delta[2]", delta[2]), zap.Bool("onGround", onGround))
 	c.SendPacket(
 		packetid.ClientboundMoveEntityPos,
 		pk.VarInt(eid),
@@ -202,6 +224,7 @@ func (c *Client) SendMoveEntitiesPos(eid int32, delta [3]int16, onGround bool) {
 }
 
 func (c *Client) SendMoveEntitiesPosAndRot(eid int32, delta [3]int16, rot [2]int8, onGround bool) {
+	zap.L().Info("SendMoveEntitiesPosAndRot", zap.Int32("eid", eid), zap.Int16("delta[0]", delta[0]), zap.Int16("delta[1]", delta[1]), zap.Int16("delta[2]", delta[2]), zap.Int8("rot[0]", rot[0]), zap.Int8("rot[1]", rot[1]), zap.Bool("onGround", onGround))
 	c.SendPacket(
 		packetid.ClientboundMoveEntityPosRot,
 		pk.VarInt(eid),
@@ -215,6 +238,7 @@ func (c *Client) SendMoveEntitiesPosAndRot(eid int32, delta [3]int16, rot [2]int
 }
 
 func (c *Client) SendMoveEntitiesRot(eid int32, rot [2]int8, onGround bool) {
+	zap.L().Info("SendMoveEntitiesRot", zap.Int32("eid", eid), zap.Int8("rot[0]", rot[0]), zap.Int8("rot[1]", rot[1]), zap.Bool("onGround", onGround))
 	c.SendPacket(
 		packetid.ClientboundMoveEntityRot,
 		pk.VarInt(eid),
@@ -233,6 +257,7 @@ func (c *Client) SendRotateHead(eid int32, yaw int8) {
 }
 
 func (c *Client) SendTeleportEntity(eid int32, pos [3]float64, rot [2]int8, onGround bool) {
+	zap.L().Info("SendTeleportEntity", zap.Int32("eid", eid), zap.Float64("pos[0]", pos[0]), zap.Float64("pos[1]", pos[1]), zap.Float64("pos[2]", pos[2]), zap.Int8("rot[0]", rot[0]), zap.Int8("rot[1]", rot[1]), zap.Bool("onGround", onGround))
 	c.SendPacket(
 		packetid.ClientboundTeleportEntity,
 		pk.VarInt(eid),
@@ -249,15 +274,19 @@ var teleportCounter atomic.Int32
 
 func (c *Client) SendPlayerPosition(pos [3]float64, rot [2]float32) (teleportID int32) {
 	teleportID = teleportCounter.Add(1)
+	zap.L().Info("SendPlayerPosition", zap.Int32("teleportID", teleportID), zap.Float64("pos[0]", pos[0]), zap.Float64("pos[1]", pos[1]), zap.Float64("pos[2]", pos[2]), zap.Float32("rot[0]", rot[0]), zap.Float32("rot[1]", rot[1]))
 	c.SendPacket(
 		packetid.ClientboundPlayerPosition,
+		pk.VarInt(teleportID),
 		pk.Double(pos[0]),
 		pk.Double(pos[1]),
 		pk.Double(pos[2]),
+		pk.Double(0),
+		pk.Double(0),
+		pk.Double(0),
 		pk.Float(rot[0]),
 		pk.Float(rot[1]),
-		pk.Byte(0), // Absolute
-		pk.VarInt(teleportID),
+		pk.Int(0), // Absolute
 	)
 	return
 }
@@ -279,8 +308,15 @@ func (c *Client) SendRemoveEntities(entityIDs []int32) {
 }
 
 func (c *Client) SendSystemChat(msg chat.Message, overlay bool) {
+	bytes := bytes.NewBuffer(nil)
+	msg.MarshalNBT(bytes)
+
+	fmt.Println(bytes.String())
+
 	c.SendPacket(packetid.ClientboundSystemChat, msg, pk.Boolean(overlay))
 }
+
+var globalIndex int32 = 0
 
 func (c *Client) SendPlayerChat(
 	sender uuid.UUID,
@@ -293,6 +329,7 @@ func (c *Client) SendPlayerChat(
 ) {
 	c.SendPacket(
 		packetid.ClientboundPlayerChat,
+		pk.VarInt(atomic.AddInt32(&globalIndex, 1)),
 		pk.UUID(sender),
 		pk.VarInt(index),
 		signature,

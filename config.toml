@@ -1,6 +1,6 @@
 level-name = "overworld"
 listen-address = "localhost:25565"
-motd = "A Minecraft Server"
+motd = "Not A Minecraft Server"
 network-compression-threshold = 256
 online-mode = true
 enforce-secure-profile = true

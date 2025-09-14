@@ -1,6 +1,8 @@
 package registry
 
-import "slices"
+import (
+	"slices"
+)
 
 type Registry[E any] struct {
 	keys    map[string]int32
