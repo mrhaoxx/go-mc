@@ -1,9 +1,9 @@
 package bootstrap
 
 import (
-	"github.com/Tnze/go-mc/data/registryid"
-	"github.com/Tnze/go-mc/level/block"
-	"github.com/Tnze/go-mc/registry"
+	"github.com/mrhaoxx/go-mc/data/registryid"
+	"github.com/mrhaoxx/go-mc/level/block"
+	"github.com/mrhaoxx/go-mc/registry"
 )
 
 func RegisterBlocks(reg *registry.Registry[block.Block]) {

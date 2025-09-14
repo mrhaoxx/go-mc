@@ -1,4 +1,4 @@
-# NBT [![Go Reference](https://pkg.go.dev/badge/github.com/Tnze/go-mc/nbt.svg)](https://pkg.go.dev/github.com/Tnze/go-mc/nbt)
+# NBT [![Go Reference](https://pkg.go.dev/badge/github.com/mrhaoxx/go-mc/nbt.svg)](https://pkg.go.dev/github.com/mrhaoxx/go-mc/nbt)
 
 This package implements the [Named Binary Tag](https://wiki.vg/NBT) format of Minecraft.
 

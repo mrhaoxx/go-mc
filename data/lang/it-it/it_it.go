@@ -2,7 +2,7 @@
 
 package it_it
 
-import "github.com/Tnze/go-mc/chat"
+import "github.com/mrhaoxx/go-mc/chat"
 
 func init() { chat.SetLanguage(Map) }
 

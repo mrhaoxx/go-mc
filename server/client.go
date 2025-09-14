@@ -3,8 +3,8 @@ package server
 import (
 	"strconv"
 
-	pk "github.com/Tnze/go-mc/net/packet"
-	"github.com/Tnze/go-mc/net/queue"
+	pk "github.com/mrhaoxx/go-mc/net/packet"
+	"github.com/mrhaoxx/go-mc/net/queue"
 )
 
 // Packet758 is a packet in protocol 757.

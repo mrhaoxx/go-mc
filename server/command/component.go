@@ -1,8 +1,8 @@
 package command
 
 import (
-	"github.com/Tnze/go-mc/data/packetid"
-	pk "github.com/Tnze/go-mc/net/packet"
+	"github.com/mrhaoxx/go-mc/data/packetid"
+	pk "github.com/mrhaoxx/go-mc/net/packet"
 )
 
 type Client interface {

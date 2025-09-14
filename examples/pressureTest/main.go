@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Tnze/go-mc/bot"
-	"github.com/Tnze/go-mc/bot/basic"
-	"github.com/Tnze/go-mc/chat"
+	"github.com/mrhaoxx/go-mc/bot"
+	"github.com/mrhaoxx/go-mc/bot/basic"
+	"github.com/mrhaoxx/go-mc/chat"
 )
 
 var (

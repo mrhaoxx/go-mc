@@ -1,7 +1,7 @@
 package component
 
 import (
-	pk "github.com/Tnze/go-mc/net/packet"
+	pk "github.com/mrhaoxx/go-mc/net/packet"
 )
 
 var _ DataComponent = (*OminousBottleAmplifier)(nil)

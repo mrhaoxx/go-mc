@@ -10,10 +10,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/Tnze/go-mc/nbt"
-	"github.com/Tnze/go-mc/nbt/dynbt"
-	"github.com/Tnze/go-mc/save/region"
 	"github.com/google/uuid"
+	"github.com/mrhaoxx/go-mc/nbt"
+	"github.com/mrhaoxx/go-mc/nbt/dynbt"
+	"github.com/mrhaoxx/go-mc/save/region"
 )
 
 func readEntities(dir string, m map[uuid.UUID]UserCache) {

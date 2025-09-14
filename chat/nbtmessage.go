@@ -6,8 +6,8 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/Tnze/go-mc/nbt"
-	pk "github.com/Tnze/go-mc/net/packet"
+	"github.com/mrhaoxx/go-mc/nbt"
+	pk "github.com/mrhaoxx/go-mc/net/packet"
 )
 
 // ReadFrom decode Message in a Text component

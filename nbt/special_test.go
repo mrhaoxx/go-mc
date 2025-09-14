@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Tnze/go-mc/nbt"
+	"github.com/mrhaoxx/go-mc/nbt"
 )
 
 func ExampleMarshal_anonymousStructField() {

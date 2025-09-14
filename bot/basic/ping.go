@@ -1,8 +1,8 @@
 package basic
 
 import (
-	"github.com/Tnze/go-mc/data/packetid"
-	pk "github.com/Tnze/go-mc/net/packet"
+	"github.com/mrhaoxx/go-mc/data/packetid"
+	pk "github.com/mrhaoxx/go-mc/net/packet"
 )
 
 func (p *Player) handlePingPacket(packet pk.Packet) error {

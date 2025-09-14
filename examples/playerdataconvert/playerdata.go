@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Tnze/go-mc/nbt"
-	"github.com/Tnze/go-mc/nbt/dynbt"
 	"github.com/google/uuid"
+	"github.com/mrhaoxx/go-mc/nbt"
+	"github.com/mrhaoxx/go-mc/nbt/dynbt"
 )
 
 func readPlayerdata(dir string, m map[uuid.UUID]UserCache) {

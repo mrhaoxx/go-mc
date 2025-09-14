@@ -3,8 +3,8 @@ package component
 import (
 	"io"
 
-	"github.com/Tnze/go-mc/chat"
-	pk "github.com/Tnze/go-mc/net/packet"
+	"github.com/mrhaoxx/go-mc/chat"
+	pk "github.com/mrhaoxx/go-mc/net/packet"
 )
 
 var _ DataComponent = (*Lore)(nil)

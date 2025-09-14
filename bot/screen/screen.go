@@ -4,11 +4,11 @@ import (
 	"errors"
 	"io"
 
-	"github.com/Tnze/go-mc/bot"
-	"github.com/Tnze/go-mc/chat"
-	"github.com/Tnze/go-mc/data/packetid"
-	"github.com/Tnze/go-mc/nbt"
-	pk "github.com/Tnze/go-mc/net/packet"
+	"github.com/mrhaoxx/go-mc/bot"
+	"github.com/mrhaoxx/go-mc/chat"
+	"github.com/mrhaoxx/go-mc/data/packetid"
+	"github.com/mrhaoxx/go-mc/nbt"
+	pk "github.com/mrhaoxx/go-mc/net/packet"
 )
 
 type Manager struct {

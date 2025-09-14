@@ -8,13 +8,13 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/Tnze/go-mc/bot"
-	"github.com/Tnze/go-mc/bot/basic"
-	"github.com/Tnze/go-mc/bot/playerlist"
-	"github.com/Tnze/go-mc/chat"
-	"github.com/Tnze/go-mc/chat/sign"
-	"github.com/Tnze/go-mc/data/packetid"
-	pk "github.com/Tnze/go-mc/net/packet"
+	"github.com/mrhaoxx/go-mc/bot"
+	"github.com/mrhaoxx/go-mc/bot/basic"
+	"github.com/mrhaoxx/go-mc/bot/playerlist"
+	"github.com/mrhaoxx/go-mc/chat"
+	"github.com/mrhaoxx/go-mc/chat/sign"
+	"github.com/mrhaoxx/go-mc/data/packetid"
+	pk "github.com/mrhaoxx/go-mc/net/packet"
 )
 
 // The Manager is used to receive and send chat messages.
