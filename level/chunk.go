@@ -52,6 +52,9 @@ func EmptyChunk(secs int) *Chunk {
 			BlockCount: 0,
 			States:     NewStatesPaletteContainer(16*16*16, 0),
 			Biomes:     NewBiomesPaletteContainer(4*4*4, 0),
+
+			SkyLight:   make([]byte, 2048),
+			BlockLight: make([]byte, 2048),
 		}
 	}
 	return &Chunk{
@@ -394,6 +397,49 @@ type Section struct {
 
 func (s *Section) GetBlock(i int) BlocksState {
 	return s.States.Get(i)
+}
+
+func getNibble(arr []byte, i int) byte {
+	if arr == nil || i < 0 || i >= 4096 {
+		return 0
+	}
+	bi := i >> 1
+	shift := uint((i & 1) * 4)
+	return (arr[bi] >> shift) & 0xF
+}
+func setNibble(arr []byte, i int, v byte) {
+	if arr == nil || i < 0 || i >= 4096 {
+		return
+	}
+	bi := i >> 1
+	shift := uint((i & 1) * 4)
+	mask := ^(byte(0xF) << shift)
+	arr[bi] = (arr[bi] & mask) | ((v & 0xF) << shift)
+}
+
+// —— 修复后的光照接口 ——
+func (s *Section) SetSkyLight(i int, v int) {
+	if v < 0 {
+		v = 0
+	} else if v > 15 {
+		v = 15
+	}
+	setNibble(s.SkyLight, i, byte(v))
+}
+func (s *Section) GetSkyLight(i int) int {
+	return int(getNibble(s.SkyLight, i))
+}
+
+func (s *Section) SetBlockLight(i int, v int) {
+	if v < 0 {
+		v = 0
+	} else if v > 15 {
+		v = 15
+	}
+	setNibble(s.BlockLight, i, byte(v))
+}
+func (s *Section) GetBlockLight(i int) int {
+	return int(getNibble(s.BlockLight, i))
 }
 
 func (s *Section) SetBlock(i int, v BlocksState) {

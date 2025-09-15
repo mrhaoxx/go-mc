@@ -17,8 +17,12 @@
 package client
 
 import (
+	"fmt"
+	"strings"
+
 	"go.uber.org/zap"
 
+	"github.com/mrhaoxx/go-mc/chat"
 	"github.com/mrhaoxx/go-mc/data/packetid"
 	"github.com/mrhaoxx/go-mc/net"
 	pk "github.com/mrhaoxx/go-mc/net/packet"
@@ -115,4 +119,53 @@ var defaultHandlers = [packetid.ServerboundPacketIDGuard]PacketHandler{
 	packetid.ServerboundMovePlayerRot:        clientMovePlayerRot,
 	packetid.ServerboundMovePlayerStatusOnly: clientMovePlayerStatusOnly,
 	packetid.ServerboundMoveVehicle:          clientMoveVehicle,
+	packetid.ServerboundChatCommand: func(p pk.Packet, c *Client) error {
+		var command pk.String
+		if err := p.Scan(&command); err != nil {
+			return err
+		}
+		fmt.Println("command", command)
+
+		var splits = strings.Split(string(command), " ")
+		if len(splits) < 1 {
+			c.SendSystemChat(chat.Message{
+				Text: "Commands Separated by Space",
+			}, false)
+			return nil
+		}
+		var cmd = splits[0]
+		var args = splits[1:]
+		switch cmd {
+		case "ping":
+			c.SendSystemChat(chat.Message{
+				Text: "Pong!",
+			}, false)
+		case "tp":
+			if len(args) != 3 {
+				c.SendSystemChat(chat.Message{
+					Text: "Usage: /tp <x> <y> <z>",
+				}, false)
+				return nil
+			}
+			var x, y, z int
+			fmt.Sscanf(args[0], "%d", &x)
+			fmt.Sscanf(args[1], "%d", &y)
+			fmt.Sscanf(args[2], "%d", &z)
+			c.SendSystemChat(chat.Message{
+				Text: "Teleporting to " + args[0] + " " + args[1] + " " + args[2],
+			}, false)
+			c.player.Position[0] = float64(x)
+			c.player.Position[1] = float64(y)
+			c.player.Position[2] = float64(z)
+			c.SendPlayerPosition(c.player.Position, c.player.Rotation)
+			return nil
+
+		default:
+			c.SendSystemChat(chat.Message{
+				Text: "Unknown command: " + cmd,
+			}, false)
+		}
+		return nil
+
+	},
 }

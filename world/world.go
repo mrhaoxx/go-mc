@@ -18,6 +18,7 @@ package world
 
 import (
 	"errors"
+	"math/rand"
 	"sync"
 
 	"go.uber.org/zap"
@@ -130,11 +131,17 @@ func (w *World) loadChunk(pos [2]int32) bool {
 			logger.Debug("Generate chunk")
 			// TODO: because there is no chunk generator，generate an empty chunk and mark it as generated
 			c = level.EmptyChunk(24)
-			stone := block.ToStateID[block.Stone{}]
+
 			for s := range c.Sections {
-				for i := 0; i < 16; i++ {
+
+				for i := 0; i < 16+rand.Intn(1920); i++ {
+					stone := block.StateID(rand.Intn(len(block.StateList)))
+
 					c.Sections[s].SetBlock(i, stone)
+					c.Sections[s].SetSkyLight(i, rand.Intn(16))
+					c.Sections[s].SetBlockLight(i, rand.Intn(16))
 				}
+
 			}
 			c.Status = level.StatusFull
 		} else if !errors.Is(err, ErrReachRateLimit) {
