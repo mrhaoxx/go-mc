@@ -73,11 +73,13 @@ func NewGame(log *zap.Logger, config Config, pingList *server.PlayerList, server
 		chatTypeCodec: &world.NetworkCodec.ChatType,
 	}
 
-	go func() {
-		for tick := range time.Tick(time.Second * 1) {
-			g.broadcastSystemChat(chat.Text("Server is running for "+tick.Format("2006-01-02 15:04:05")), false)
-		}
-	}()
+	// go func() {
+	// 	for range time.Tick(time.Second * 5) {
+	// 		pl.pingList.Range(func(c server.PlayerListClient, _ server.PlayerSample) {
+	// 			c.(*client.Client).SendPlayerPosition([3]float64{48, 100, 35}, [2]float32{})
+	// 		})
+	// 	}
+	// }()
 
 	return &Game{
 		log: log.Named("game"),

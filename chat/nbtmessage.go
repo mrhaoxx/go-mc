@@ -28,7 +28,14 @@ func (m Message) MarshalNBT(w io.Writer) error {
 	if m.Translate != "" {
 		return nbt.NewEncoder(w).Encode(translateMsg(m), "")
 	} else {
-		return nbt.NewEncoder(w).Encode(rawMsgStruct(m), "")
+		buf := bytes.NewBuffer(nil)
+
+		nbt.NewEncoder(buf).Encode(rawMsgStruct(m), "")
+
+		buf.Next(3)
+
+		_, err := io.Copy(w, buf)
+		return err
 	}
 }
 

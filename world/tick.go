@@ -17,6 +17,7 @@
 package world
 
 import (
+	"fmt"
 	"math"
 	"time"
 
@@ -60,11 +61,14 @@ LoadChunk:
 	for viewer, loader := range w.loaders {
 		loader.calcLoadingQueue()
 		for _, pos := range loader.loadQueue {
+			fmt.Println("loading chunk", pos)
 			if !loader.limiter.Allow() { // We reach the player limit. Skip
+				fmt.Println("reach player limit")
 				break
 			}
 			if _, ok := w.chunks[pos]; !ok {
 				if !w.loadChunk(pos) {
+					fmt.Println("reach global limit")
 					break LoadChunk // We reach the global limit. skip
 				}
 			}
@@ -104,10 +108,11 @@ func (w *World) subtickUpdatePlayers() {
 		}
 		inputs := &p.Inputs
 		// update the range of visual.
-		if p.ViewDistance != int32(inputs.ViewDistance) {
-			p.ViewDistance = int32(inputs.ViewDistance)
-			p.view = w.playerViews.Insert(p.getView(), w.playerViews.Delete(p.view))
-		}
+		// if p.ViewDistance != int32(inputs.ViewDistance) {
+		// 	p.ViewDistance = int32(inputs.ViewDistance)
+		// 	fmt.Println("updating view distance", p.ViewDistance)
+		// 	p.view = w.playerViews.Insert(p.getView(), w.playerViews.Delete(p.view))
+		// }
 		// delete entities that not in range from entities lists of each player.
 		for id, e := range p.EntitiesInView {
 			if !p.view.Box.WithIn(vec3d(e.Position)) {
@@ -130,6 +135,16 @@ func (w *World) subtickUpdatePlayers() {
 			distance := math.Sqrt(delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2])
 			if distance > 100 {
 				// You moved too quickly :( (Hacking?)
+				teleportID := c.SendPlayerPosition(p.Position, p.Rotation)
+				p.teleport = &TeleportRequest{
+					ID:       teleportID,
+					Position: p.Position,
+					Rotation: p.Rotation,
+				}
+			} else if inputs.Position[1] < -100 {
+
+				p.Position[1] = 100
+
 				teleportID := c.SendPlayerPosition(p.Position, p.Rotation)
 				p.teleport = &TeleportRequest{
 					ID:       teleportID,

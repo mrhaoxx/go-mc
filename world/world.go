@@ -132,7 +132,7 @@ func (w *World) loadChunk(pos [2]int32) bool {
 			c = level.EmptyChunk(24)
 			stone := block.ToStateID[block.Stone{}]
 			for s := range c.Sections {
-				for i := 0; i < 16*16*16; i++ {
+				for i := 0; i < 16; i++ {
 					c.Sections[s].SetBlock(i, stone)
 				}
 			}

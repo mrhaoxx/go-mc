@@ -274,7 +274,8 @@ var teleportCounter atomic.Int32
 
 func (c *Client) SendPlayerPosition(pos [3]float64, rot [2]float32) (teleportID int32) {
 	teleportID = teleportCounter.Add(1)
-	zap.L().Info("SendPlayerPosition", zap.Int32("teleportID", teleportID), zap.Float64("pos[0]", pos[0]), zap.Float64("pos[1]", pos[1]), zap.Float64("pos[2]", pos[2]), zap.Float32("rot[0]", rot[0]), zap.Float32("rot[1]", rot[1]))
+
+	fmt.Println("SendPlayerPosition", teleportID, pos[0], pos[1], pos[2], rot[0], rot[1])
 	c.SendPacket(
 		packetid.ClientboundPlayerPosition,
 		pk.VarInt(teleportID),
@@ -308,10 +309,7 @@ func (c *Client) SendRemoveEntities(entityIDs []int32) {
 }
 
 func (c *Client) SendSystemChat(msg chat.Message, overlay bool) {
-	bytes := bytes.NewBuffer(nil)
-	msg.MarshalNBT(bytes)
-
-	fmt.Println(bytes.String())
+	fmt.Println(msg.String())
 
 	c.SendPacket(packetid.ClientboundSystemChat, msg, pk.Boolean(overlay))
 }

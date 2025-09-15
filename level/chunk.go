@@ -439,7 +439,7 @@ func bitSetRev(set pk.BitSet) pk.BitSet {
 
 func (l *lightData) WriteTo(w io.Writer) (int64, error) {
 	return pk.Tuple{
-		pk.Boolean(true), // Trust Edges
+		// pk.Boolean(true), // Trust Edges
 		l.SkyLightMask,
 		l.BlockLightMask,
 		bitSetRev(l.SkyLightMask),

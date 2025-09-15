@@ -103,22 +103,24 @@ func (g *globalChat) Handle(p pk.Packet, c *client.Client) error {
 	decorated := chatType.Decorate(chat.Text(string(message)), &decorator.Chat)
 	logger.Info(decorated.String())
 
-	g.players.pingList.Range(func(c server.PlayerListClient, _ server.PlayerSample) {
-		c.(*client.Client).SendPlayerChat(
-			player.UUID,
-			0,
-			signature,
-			&sign.PackedMessageBody{
-				PlainMsg:  string(message),
-				Timestamp: timestamp,
-				Salt:      int64(salt),
-				LastSeen:  []sign.PackedSignature{},
-			},
-			nil,
-			&sign.FilterMask{Type: 0},
-			&chatType,
-		)
-	})
+	g.broadcastSystemChat(chat.Message{Text: decorated.String()}, false)
+
+	// g.players.pingList.Range(func(c server.PlayerListClient, _ server.PlayerSample) {
+	// 	c.(*client.Client).SendPlayerChat(
+	// 		player.UUID,
+	// 		0,
+	// 		signature,
+	// 		&sign.PackedMessageBody{
+	// 			PlainMsg:  string(message),
+	// 			Timestamp: timestamp,
+	// 			Salt:      int64(salt),
+	// 			LastSeen:  []sign.PackedSignature{},
+	// 		},
+	// 		nil,
+	// 		&sign.FilterMask{Type: 0},
+	// 		&chatType,
+	// 	)
+	// })
 	return nil
 }
 

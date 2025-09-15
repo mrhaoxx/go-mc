@@ -80,7 +80,7 @@ func main() {
 			*server.PingInfo
 		}{playerList, serverInfo},
 		LoginHandler: &server.MojangLoginHandler{
-			OnlineMode:           config.OnlineMode,
+			OnlineMode:           false,
 			EnforceSecureProfile: config.EnforceSecureProfile,
 			Threshold:            config.NetworkCompressionThreshold,
 			LoginChecker:         playerList, // playerList implement LoginChecker interface to limit the maximum number of online players

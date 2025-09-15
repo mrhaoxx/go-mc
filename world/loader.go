@@ -17,6 +17,7 @@
 package world
 
 import (
+	"fmt"
 	"math"
 	"sort"
 
@@ -44,7 +45,6 @@ func newLoader(source loaderSource, limiter *rate.Limiter) (l *loader) {
 		loaded:       make(map[[2]int32]struct{}),
 		limiter:      limiter,
 	}
-	l.calcLoadingQueue()
 	return
 }
 
@@ -52,10 +52,13 @@ func newLoader(source loaderSource, limiter *rate.Limiter) (l *loader) {
 // The result is stored in l.loadQueue and the previous will be removed.
 func (l *loader) calcLoadingQueue() {
 	l.loadQueue = l.loadQueue[:0]
+	// fmt.Println("calculating loading queue", l.chunkRadius()) // TODO: FIX IT
 	for _, v := range loadList[:radiusIdx[l.chunkRadius()]] {
 		pos := l.chunkPosition()
+		// fmt.Println("pos", pos)
 		pos[0], pos[1] = pos[0]+v[0], pos[1]+v[1]
 		if _, ok := l.loaded[pos]; !ok {
+			fmt.Println("adding chunk", pos)
 			l.loadQueue = append(l.loadQueue, pos)
 		}
 	}

@@ -46,6 +46,8 @@ func NewProvider(dir string, limiter *rate.Limiter) ChunkProvider {
 var ErrReachRateLimit = errors.New("reach rate limit")
 
 func (p *ChunkProvider) GetChunk(pos [2]int32) (c *level.Chunk, errRet error) {
+
+	fmt.Println("GetChunk", pos)
 	if !p.limiter.Allow() {
 		return nil, ErrReachRateLimit
 	}
