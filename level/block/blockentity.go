@@ -17,6 +17,7 @@ type (
 	SignEntity                  struct{}
 	HangingSignEntity           struct{}
 	MobSpawnerEntity            struct{}
+	CreakingHeartEntity         struct{}
 	PistonEntity                struct{}
 	BrewingStandEntity          struct{}
 	EnchantingTableEntity       struct{}

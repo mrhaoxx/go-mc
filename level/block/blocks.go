@@ -19,14 +19,18 @@ type (
 	Podzol     struct {
 		Snowy Boolean `nbt:"snowy"`
 	}
-	Cobblestone    struct{}
-	OakPlanks      struct{}
-	SprucePlanks   struct{}
-	BirchPlanks    struct{}
-	JunglePlanks   struct{}
-	AcaciaPlanks   struct{}
-	CherryPlanks   struct{}
-	DarkOakPlanks  struct{}
+	Cobblestone   struct{}
+	OakPlanks     struct{}
+	SprucePlanks  struct{}
+	BirchPlanks   struct{}
+	JunglePlanks  struct{}
+	AcaciaPlanks  struct{}
+	CherryPlanks  struct{}
+	DarkOakPlanks struct{}
+	PaleOakWood   struct {
+		Axis Axis `nbt:"axis"`
+	}
+	PaleOakPlanks  struct{}
 	MangrovePlanks struct{}
 	BambooPlanks   struct{}
 	BambooMosaic   struct{}
@@ -49,6 +53,9 @@ type (
 		Stage Integer `nbt:"stage"`
 	}
 	DarkOakSapling struct {
+		Stage Integer `nbt:"stage"`
+	}
+	PaleOakSapling struct {
 		Stage Integer `nbt:"stage"`
 	}
 	MangrovePropagule struct {
@@ -101,6 +108,9 @@ type (
 	DarkOakLog struct {
 		Axis Axis `nbt:"axis"`
 	}
+	PaleOakLog struct {
+		Axis Axis `nbt:"axis"`
+	}
 	MangroveLog struct {
 		Axis Axis `nbt:"axis"`
 	}
@@ -129,6 +139,9 @@ type (
 		Axis Axis `nbt:"axis"`
 	}
 	StrippedDarkOakLog struct {
+		Axis Axis `nbt:"axis"`
+	}
+	StrippedPaleOakLog struct {
 		Axis Axis `nbt:"axis"`
 	}
 	StrippedOakLog struct {
@@ -185,6 +198,9 @@ type (
 	StrippedDarkOakWood struct {
 		Axis Axis `nbt:"axis"`
 	}
+	StrippedPaleOakWood struct {
+		Axis Axis `nbt:"axis"`
+	}
 	StrippedMangroveWood struct {
 		Axis Axis `nbt:"axis"`
 	}
@@ -219,6 +235,11 @@ type (
 		Waterlogged Boolean `nbt:"waterlogged"`
 	}
 	DarkOakLeaves struct {
+		Distance    Integer `nbt:"distance"`
+		Persistent  Boolean `nbt:"persistent"`
+		Waterlogged Boolean `nbt:"waterlogged"`
+	}
+	PaleOakLeaves struct {
 		Distance    Integer `nbt:"distance"`
 		Persistent  Boolean `nbt:"persistent"`
 		Waterlogged Boolean `nbt:"waterlogged"`
@@ -433,8 +454,13 @@ type (
 		Up    Boolean `nbt:"up"`
 		West  Boolean `nbt:"west"`
 	}
-	SoulFire  struct{}
-	Spawner   struct{}
+	SoulFire      struct{}
+	Spawner       struct{}
+	CreakingHeart struct {
+		Active  Boolean `nbt:"active"`
+		Axis    Axis    `nbt:"axis"`
+		Natural Boolean `nbt:"natural"`
+	}
 	OakStairs struct {
 		Facing      Direction   `nbt:"facing"`
 		Half        Half        `nbt:"half"`
@@ -495,6 +521,10 @@ type (
 		Rotation    Integer `nbt:"rotation"`
 		Waterlogged Boolean `nbt:"waterlogged"`
 	}
+	PaleOakSign struct {
+		Rotation    Integer `nbt:"rotation"`
+		Waterlogged Boolean `nbt:"waterlogged"`
+	}
 	MangroveSign struct {
 		Rotation    Integer `nbt:"rotation"`
 		Waterlogged Boolean `nbt:"waterlogged"`
@@ -552,6 +582,10 @@ type (
 		Facing      Direction `nbt:"facing"`
 		Waterlogged Boolean   `nbt:"waterlogged"`
 	}
+	PaleOakWallSign struct {
+		Facing      Direction `nbt:"facing"`
+		Waterlogged Boolean   `nbt:"waterlogged"`
+	}
 	MangroveWallSign struct {
 		Facing      Direction `nbt:"facing"`
 		Waterlogged Boolean   `nbt:"waterlogged"`
@@ -591,6 +625,11 @@ type (
 		Waterlogged Boolean `nbt:"waterlogged"`
 	}
 	DarkOakHangingSign struct {
+		Attached    Boolean `nbt:"attached"`
+		Rotation    Integer `nbt:"rotation"`
+		Waterlogged Boolean `nbt:"waterlogged"`
+	}
+	PaleOakHangingSign struct {
 		Attached    Boolean `nbt:"attached"`
 		Rotation    Integer `nbt:"rotation"`
 		Waterlogged Boolean `nbt:"waterlogged"`
@@ -640,6 +679,10 @@ type (
 		Waterlogged Boolean   `nbt:"waterlogged"`
 	}
 	DarkOakWallHangingSign struct {
+		Facing      Direction `nbt:"facing"`
+		Waterlogged Boolean   `nbt:"waterlogged"`
+	}
+	PaleOakWallHangingSign struct {
 		Facing      Direction `nbt:"facing"`
 		Waterlogged Boolean   `nbt:"waterlogged"`
 	}
@@ -693,6 +736,9 @@ type (
 		Powered Boolean `nbt:"powered"`
 	}
 	DarkOakPressurePlate struct {
+		Powered Boolean `nbt:"powered"`
+	}
+	PaleOakPressurePlate struct {
 		Powered Boolean `nbt:"powered"`
 	}
 	MangrovePressurePlate struct {
@@ -838,6 +884,13 @@ type (
 		Powered     Boolean   `nbt:"powered"`
 		Waterlogged Boolean   `nbt:"waterlogged"`
 	}
+	PaleOakTrapdoor struct {
+		Facing      Direction `nbt:"facing"`
+		Half        Half      `nbt:"half"`
+		Open        Boolean   `nbt:"open"`
+		Powered     Boolean   `nbt:"powered"`
+		Waterlogged Boolean   `nbt:"waterlogged"`
+	}
 	MangroveTrapdoor struct {
 		Facing      Direction `nbt:"facing"`
 		Half        Half      `nbt:"half"`
@@ -936,6 +989,15 @@ type (
 		Waterlogged Boolean `nbt:"waterlogged"`
 		West        Boolean `nbt:"west"`
 	}
+	ResinClump struct {
+		Down        Boolean `nbt:"down"`
+		East        Boolean `nbt:"east"`
+		North       Boolean `nbt:"north"`
+		South       Boolean `nbt:"south"`
+		Up          Boolean `nbt:"up"`
+		Waterlogged Boolean `nbt:"waterlogged"`
+		West        Boolean `nbt:"west"`
+	}
 	OakFenceGate struct {
 		Facing  Direction `nbt:"facing"`
 		In_wall Boolean   `nbt:"in_wall"`
@@ -964,8 +1026,29 @@ type (
 		Snowy Boolean `nbt:"snowy"`
 	}
 	LilyPad          struct{}
-	NetherBricks     struct{}
-	NetherBrickFence struct {
+	ResinBlock       struct{}
+	ResinBricks      struct{}
+	ResinBrickStairs struct {
+		Facing      Direction   `nbt:"facing"`
+		Half        Half        `nbt:"half"`
+		Shape       StairsShape `nbt:"shape"`
+		Waterlogged Boolean     `nbt:"waterlogged"`
+	}
+	ResinBrickSlab struct {
+		Type        SlabType `nbt:"type"`
+		Waterlogged Boolean  `nbt:"waterlogged"`
+	}
+	ResinBrickWall struct {
+		East        WallSide `nbt:"east"`
+		North       WallSide `nbt:"north"`
+		South       WallSide `nbt:"south"`
+		Up          Boolean  `nbt:"up"`
+		Waterlogged Boolean  `nbt:"waterlogged"`
+		West        WallSide `nbt:"west"`
+	}
+	ChiseledResinBricks struct{}
+	NetherBricks        struct{}
+	NetherBrickFence    struct {
 		East        Boolean `nbt:"east"`
 		North       Boolean `nbt:"north"`
 		South       Boolean `nbt:"south"`
@@ -1084,6 +1167,7 @@ type (
 	PottedAcaciaSapling     struct{}
 	PottedCherrySapling     struct{}
 	PottedDarkOakSapling    struct{}
+	PottedPaleOakSapling    struct{}
 	PottedMangrovePropagule struct{}
 	PottedFern              struct{}
 	PottedDandelion         struct{}
@@ -1140,6 +1224,11 @@ type (
 		Powered Boolean    `nbt:"powered"`
 	}
 	DarkOakButton struct {
+		Face    AttachFace `nbt:"face"`
+		Facing  Direction  `nbt:"facing"`
+		Powered Boolean    `nbt:"powered"`
+	}
+	PaleOakButton struct {
 		Face    AttachFace `nbt:"face"`
 		Facing  Direction  `nbt:"facing"`
 		Powered Boolean    `nbt:"powered"`
@@ -1411,6 +1500,12 @@ type (
 		Shape       StairsShape `nbt:"shape"`
 		Waterlogged Boolean     `nbt:"waterlogged"`
 	}
+	PaleOakStairs struct {
+		Facing      Direction   `nbt:"facing"`
+		Half        Half        `nbt:"half"`
+		Shape       StairsShape `nbt:"shape"`
+		Waterlogged Boolean     `nbt:"waterlogged"`
+	}
 	MangroveStairs struct {
 		Facing      Direction   `nbt:"facing"`
 		Half        Half        `nbt:"half"`
@@ -1651,6 +1746,10 @@ type (
 		Type        SlabType `nbt:"type"`
 		Waterlogged Boolean  `nbt:"waterlogged"`
 	}
+	PaleOakSlab struct {
+		Type        SlabType `nbt:"type"`
+		Waterlogged Boolean  `nbt:"waterlogged"`
+	}
 	MangroveSlab struct {
 		Type        SlabType `nbt:"type"`
 		Waterlogged Boolean  `nbt:"waterlogged"`
@@ -1759,6 +1858,12 @@ type (
 		Open    Boolean   `nbt:"open"`
 		Powered Boolean   `nbt:"powered"`
 	}
+	PaleOakFenceGate struct {
+		Facing  Direction `nbt:"facing"`
+		In_wall Boolean   `nbt:"in_wall"`
+		Open    Boolean   `nbt:"open"`
+		Powered Boolean   `nbt:"powered"`
+	}
 	MangroveFenceGate struct {
 		Facing  Direction `nbt:"facing"`
 		In_wall Boolean   `nbt:"in_wall"`
@@ -1807,6 +1912,13 @@ type (
 		West        Boolean `nbt:"west"`
 	}
 	DarkOakFence struct {
+		East        Boolean `nbt:"east"`
+		North       Boolean `nbt:"north"`
+		South       Boolean `nbt:"south"`
+		Waterlogged Boolean `nbt:"waterlogged"`
+		West        Boolean `nbt:"west"`
+	}
+	PaleOakFence struct {
 		East        Boolean `nbt:"east"`
 		North       Boolean `nbt:"north"`
 		South       Boolean `nbt:"south"`
@@ -1863,6 +1975,13 @@ type (
 		Powered Boolean         `nbt:"powered"`
 	}
 	DarkOakDoor struct {
+		Facing  Direction       `nbt:"facing"`
+		Half    DoubleBlockHalf `nbt:"half"`
+		Hinge   DoorHingeSide   `nbt:"hinge"`
+		Open    Boolean         `nbt:"open"`
+		Powered Boolean         `nbt:"powered"`
+	}
+	PaleOakDoor struct {
 		Facing  Direction       `nbt:"facing"`
 		Half    DoubleBlockHalf `nbt:"half"`
 		Hinge   DoorHingeSide   `nbt:"hinge"`
@@ -3463,6 +3582,21 @@ type (
 	HeavyCore struct {
 		Waterlogged Boolean `nbt:"waterlogged"`
 	}
+	PaleMossBlock  struct{}
+	PaleMossCarpet struct {
+		Bottom Boolean  `nbt:"bottom"`
+		East   WallSide `nbt:"east"`
+		North  WallSide `nbt:"north"`
+		South  WallSide `nbt:"south"`
+		West   WallSide `nbt:"west"`
+	}
+	PaleHangingMoss struct {
+		Tip Boolean `nbt:"tip"`
+	}
+	OpenEyeblossom         struct{}
+	ClosedEyeblossom       struct{}
+	PottedOpenEyeblossom   struct{}
+	PottedClosedEyeblossom struct{}
 )
 
 func (Air) ID() string                         { return "minecraft:air" }
@@ -3485,6 +3619,8 @@ func (JunglePlanks) ID() string                { return "minecraft:jungle_planks
 func (AcaciaPlanks) ID() string                { return "minecraft:acacia_planks" }
 func (CherryPlanks) ID() string                { return "minecraft:cherry_planks" }
 func (DarkOakPlanks) ID() string               { return "minecraft:dark_oak_planks" }
+func (PaleOakWood) ID() string                 { return "minecraft:pale_oak_wood" }
+func (PaleOakPlanks) ID() string               { return "minecraft:pale_oak_planks" }
 func (MangrovePlanks) ID() string              { return "minecraft:mangrove_planks" }
 func (BambooPlanks) ID() string                { return "minecraft:bamboo_planks" }
 func (BambooMosaic) ID() string                { return "minecraft:bamboo_mosaic" }
@@ -3495,6 +3631,7 @@ func (JungleSapling) ID() string               { return "minecraft:jungle_saplin
 func (AcaciaSapling) ID() string               { return "minecraft:acacia_sapling" }
 func (CherrySapling) ID() string               { return "minecraft:cherry_sapling" }
 func (DarkOakSapling) ID() string              { return "minecraft:dark_oak_sapling" }
+func (PaleOakSapling) ID() string              { return "minecraft:pale_oak_sapling" }
 func (MangrovePropagule) ID() string           { return "minecraft:mangrove_propagule" }
 func (Bedrock) ID() string                     { return "minecraft:bedrock" }
 func (Water) ID() string                       { return "minecraft:water" }
@@ -3518,6 +3655,7 @@ func (JungleLog) ID() string                   { return "minecraft:jungle_log" }
 func (AcaciaLog) ID() string                   { return "minecraft:acacia_log" }
 func (CherryLog) ID() string                   { return "minecraft:cherry_log" }
 func (DarkOakLog) ID() string                  { return "minecraft:dark_oak_log" }
+func (PaleOakLog) ID() string                  { return "minecraft:pale_oak_log" }
 func (MangroveLog) ID() string                 { return "minecraft:mangrove_log" }
 func (MangroveRoots) ID() string               { return "minecraft:mangrove_roots" }
 func (MuddyMangroveRoots) ID() string          { return "minecraft:muddy_mangrove_roots" }
@@ -3528,6 +3666,7 @@ func (StrippedJungleLog) ID() string           { return "minecraft:stripped_jung
 func (StrippedAcaciaLog) ID() string           { return "minecraft:stripped_acacia_log" }
 func (StrippedCherryLog) ID() string           { return "minecraft:stripped_cherry_log" }
 func (StrippedDarkOakLog) ID() string          { return "minecraft:stripped_dark_oak_log" }
+func (StrippedPaleOakLog) ID() string          { return "minecraft:stripped_pale_oak_log" }
 func (StrippedOakLog) ID() string              { return "minecraft:stripped_oak_log" }
 func (StrippedMangroveLog) ID() string         { return "minecraft:stripped_mangrove_log" }
 func (StrippedBambooBlock) ID() string         { return "minecraft:stripped_bamboo_block" }
@@ -3546,6 +3685,7 @@ func (StrippedJungleWood) ID() string          { return "minecraft:stripped_jung
 func (StrippedAcaciaWood) ID() string          { return "minecraft:stripped_acacia_wood" }
 func (StrippedCherryWood) ID() string          { return "minecraft:stripped_cherry_wood" }
 func (StrippedDarkOakWood) ID() string         { return "minecraft:stripped_dark_oak_wood" }
+func (StrippedPaleOakWood) ID() string         { return "minecraft:stripped_pale_oak_wood" }
 func (StrippedMangroveWood) ID() string        { return "minecraft:stripped_mangrove_wood" }
 func (OakLeaves) ID() string                   { return "minecraft:oak_leaves" }
 func (SpruceLeaves) ID() string                { return "minecraft:spruce_leaves" }
@@ -3554,6 +3694,7 @@ func (JungleLeaves) ID() string                { return "minecraft:jungle_leaves
 func (AcaciaLeaves) ID() string                { return "minecraft:acacia_leaves" }
 func (CherryLeaves) ID() string                { return "minecraft:cherry_leaves" }
 func (DarkOakLeaves) ID() string               { return "minecraft:dark_oak_leaves" }
+func (PaleOakLeaves) ID() string               { return "minecraft:pale_oak_leaves" }
 func (MangroveLeaves) ID() string              { return "minecraft:mangrove_leaves" }
 func (AzaleaLeaves) ID() string                { return "minecraft:azalea_leaves" }
 func (FloweringAzaleaLeaves) ID() string       { return "minecraft:flowering_azalea_leaves" }
@@ -3641,6 +3782,7 @@ func (WallTorch) ID() string                   { return "minecraft:wall_torch" }
 func (Fire) ID() string                        { return "minecraft:fire" }
 func (SoulFire) ID() string                    { return "minecraft:soul_fire" }
 func (Spawner) ID() string                     { return "minecraft:spawner" }
+func (CreakingHeart) ID() string               { return "minecraft:creaking_heart" }
 func (OakStairs) ID() string                   { return "minecraft:oak_stairs" }
 func (Chest) ID() string                       { return "minecraft:chest" }
 func (RedstoneWire) ID() string                { return "minecraft:redstone_wire" }
@@ -3658,6 +3800,7 @@ func (AcaciaSign) ID() string                  { return "minecraft:acacia_sign" 
 func (CherrySign) ID() string                  { return "minecraft:cherry_sign" }
 func (JungleSign) ID() string                  { return "minecraft:jungle_sign" }
 func (DarkOakSign) ID() string                 { return "minecraft:dark_oak_sign" }
+func (PaleOakSign) ID() string                 { return "minecraft:pale_oak_sign" }
 func (MangroveSign) ID() string                { return "minecraft:mangrove_sign" }
 func (BambooSign) ID() string                  { return "minecraft:bamboo_sign" }
 func (OakDoor) ID() string                     { return "minecraft:oak_door" }
@@ -3671,6 +3814,7 @@ func (AcaciaWallSign) ID() string              { return "minecraft:acacia_wall_s
 func (CherryWallSign) ID() string              { return "minecraft:cherry_wall_sign" }
 func (JungleWallSign) ID() string              { return "minecraft:jungle_wall_sign" }
 func (DarkOakWallSign) ID() string             { return "minecraft:dark_oak_wall_sign" }
+func (PaleOakWallSign) ID() string             { return "minecraft:pale_oak_wall_sign" }
 func (MangroveWallSign) ID() string            { return "minecraft:mangrove_wall_sign" }
 func (BambooWallSign) ID() string              { return "minecraft:bamboo_wall_sign" }
 func (OakHangingSign) ID() string              { return "minecraft:oak_hanging_sign" }
@@ -3680,6 +3824,7 @@ func (AcaciaHangingSign) ID() string           { return "minecraft:acacia_hangin
 func (CherryHangingSign) ID() string           { return "minecraft:cherry_hanging_sign" }
 func (JungleHangingSign) ID() string           { return "minecraft:jungle_hanging_sign" }
 func (DarkOakHangingSign) ID() string          { return "minecraft:dark_oak_hanging_sign" }
+func (PaleOakHangingSign) ID() string          { return "minecraft:pale_oak_hanging_sign" }
 func (CrimsonHangingSign) ID() string          { return "minecraft:crimson_hanging_sign" }
 func (WarpedHangingSign) ID() string           { return "minecraft:warped_hanging_sign" }
 func (MangroveHangingSign) ID() string         { return "minecraft:mangrove_hanging_sign" }
@@ -3691,6 +3836,7 @@ func (AcaciaWallHangingSign) ID() string       { return "minecraft:acacia_wall_h
 func (CherryWallHangingSign) ID() string       { return "minecraft:cherry_wall_hanging_sign" }
 func (JungleWallHangingSign) ID() string       { return "minecraft:jungle_wall_hanging_sign" }
 func (DarkOakWallHangingSign) ID() string      { return "minecraft:dark_oak_wall_hanging_sign" }
+func (PaleOakWallHangingSign) ID() string      { return "minecraft:pale_oak_wall_hanging_sign" }
 func (MangroveWallHangingSign) ID() string     { return "minecraft:mangrove_wall_hanging_sign" }
 func (CrimsonWallHangingSign) ID() string      { return "minecraft:crimson_wall_hanging_sign" }
 func (WarpedWallHangingSign) ID() string       { return "minecraft:warped_wall_hanging_sign" }
@@ -3705,6 +3851,7 @@ func (JunglePressurePlate) ID() string         { return "minecraft:jungle_pressu
 func (AcaciaPressurePlate) ID() string         { return "minecraft:acacia_pressure_plate" }
 func (CherryPressurePlate) ID() string         { return "minecraft:cherry_pressure_plate" }
 func (DarkOakPressurePlate) ID() string        { return "minecraft:dark_oak_pressure_plate" }
+func (PaleOakPressurePlate) ID() string        { return "minecraft:pale_oak_pressure_plate" }
 func (MangrovePressurePlate) ID() string       { return "minecraft:mangrove_pressure_plate" }
 func (BambooPressurePlate) ID() string         { return "minecraft:bamboo_pressure_plate" }
 func (RedstoneOre) ID() string                 { return "minecraft:redstone_ore" }
@@ -3756,6 +3903,7 @@ func (JungleTrapdoor) ID() string              { return "minecraft:jungle_trapdo
 func (AcaciaTrapdoor) ID() string              { return "minecraft:acacia_trapdoor" }
 func (CherryTrapdoor) ID() string              { return "minecraft:cherry_trapdoor" }
 func (DarkOakTrapdoor) ID() string             { return "minecraft:dark_oak_trapdoor" }
+func (PaleOakTrapdoor) ID() string             { return "minecraft:pale_oak_trapdoor" }
 func (MangroveTrapdoor) ID() string            { return "minecraft:mangrove_trapdoor" }
 func (BambooTrapdoor) ID() string              { return "minecraft:bamboo_trapdoor" }
 func (StoneBricks) ID() string                 { return "minecraft:stone_bricks" }
@@ -3784,12 +3932,19 @@ func (PumpkinStem) ID() string                 { return "minecraft:pumpkin_stem"
 func (MelonStem) ID() string                   { return "minecraft:melon_stem" }
 func (Vine) ID() string                        { return "minecraft:vine" }
 func (GlowLichen) ID() string                  { return "minecraft:glow_lichen" }
+func (ResinClump) ID() string                  { return "minecraft:resin_clump" }
 func (OakFenceGate) ID() string                { return "minecraft:oak_fence_gate" }
 func (BrickStairs) ID() string                 { return "minecraft:brick_stairs" }
 func (StoneBrickStairs) ID() string            { return "minecraft:stone_brick_stairs" }
 func (MudBrickStairs) ID() string              { return "minecraft:mud_brick_stairs" }
 func (Mycelium) ID() string                    { return "minecraft:mycelium" }
 func (LilyPad) ID() string                     { return "minecraft:lily_pad" }
+func (ResinBlock) ID() string                  { return "minecraft:resin_block" }
+func (ResinBricks) ID() string                 { return "minecraft:resin_bricks" }
+func (ResinBrickStairs) ID() string            { return "minecraft:resin_brick_stairs" }
+func (ResinBrickSlab) ID() string              { return "minecraft:resin_brick_slab" }
+func (ResinBrickWall) ID() string              { return "minecraft:resin_brick_wall" }
+func (ChiseledResinBricks) ID() string         { return "minecraft:chiseled_resin_bricks" }
 func (NetherBricks) ID() string                { return "minecraft:nether_bricks" }
 func (NetherBrickFence) ID() string            { return "minecraft:nether_brick_fence" }
 func (NetherBrickStairs) ID() string           { return "minecraft:nether_brick_stairs" }
@@ -3829,6 +3984,7 @@ func (PottedJungleSapling) ID() string         { return "minecraft:potted_jungle
 func (PottedAcaciaSapling) ID() string         { return "minecraft:potted_acacia_sapling" }
 func (PottedCherrySapling) ID() string         { return "minecraft:potted_cherry_sapling" }
 func (PottedDarkOakSapling) ID() string        { return "minecraft:potted_dark_oak_sapling" }
+func (PottedPaleOakSapling) ID() string        { return "minecraft:potted_pale_oak_sapling" }
 func (PottedMangrovePropagule) ID() string     { return "minecraft:potted_mangrove_propagule" }
 func (PottedFern) ID() string                  { return "minecraft:potted_fern" }
 func (PottedDandelion) ID() string             { return "minecraft:potted_dandelion" }
@@ -3857,6 +4013,7 @@ func (JungleButton) ID() string                { return "minecraft:jungle_button
 func (AcaciaButton) ID() string                { return "minecraft:acacia_button" }
 func (CherryButton) ID() string                { return "minecraft:cherry_button" }
 func (DarkOakButton) ID() string               { return "minecraft:dark_oak_button" }
+func (PaleOakButton) ID() string               { return "minecraft:pale_oak_button" }
 func (MangroveButton) ID() string              { return "minecraft:mangrove_button" }
 func (BambooButton) ID() string                { return "minecraft:bamboo_button" }
 func (SkeletonSkull) ID() string               { return "minecraft:skeleton_skull" }
@@ -3925,6 +4082,7 @@ func (BlackStainedGlassPane) ID() string       { return "minecraft:black_stained
 func (AcaciaStairs) ID() string                { return "minecraft:acacia_stairs" }
 func (CherryStairs) ID() string                { return "minecraft:cherry_stairs" }
 func (DarkOakStairs) ID() string               { return "minecraft:dark_oak_stairs" }
+func (PaleOakStairs) ID() string               { return "minecraft:pale_oak_stairs" }
 func (MangroveStairs) ID() string              { return "minecraft:mangrove_stairs" }
 func (BambooStairs) ID() string                { return "minecraft:bamboo_stairs" }
 func (BambooMosaicStairs) ID() string          { return "minecraft:bamboo_mosaic_stairs" }
@@ -4011,6 +4169,7 @@ func (JungleSlab) ID() string                  { return "minecraft:jungle_slab" 
 func (AcaciaSlab) ID() string                  { return "minecraft:acacia_slab" }
 func (CherrySlab) ID() string                  { return "minecraft:cherry_slab" }
 func (DarkOakSlab) ID() string                 { return "minecraft:dark_oak_slab" }
+func (PaleOakSlab) ID() string                 { return "minecraft:pale_oak_slab" }
 func (MangroveSlab) ID() string                { return "minecraft:mangrove_slab" }
 func (BambooSlab) ID() string                  { return "minecraft:bamboo_slab" }
 func (BambooMosaicSlab) ID() string            { return "minecraft:bamboo_mosaic_slab" }
@@ -4038,6 +4197,7 @@ func (JungleFenceGate) ID() string             { return "minecraft:jungle_fence_
 func (AcaciaFenceGate) ID() string             { return "minecraft:acacia_fence_gate" }
 func (CherryFenceGate) ID() string             { return "minecraft:cherry_fence_gate" }
 func (DarkOakFenceGate) ID() string            { return "minecraft:dark_oak_fence_gate" }
+func (PaleOakFenceGate) ID() string            { return "minecraft:pale_oak_fence_gate" }
 func (MangroveFenceGate) ID() string           { return "minecraft:mangrove_fence_gate" }
 func (BambooFenceGate) ID() string             { return "minecraft:bamboo_fence_gate" }
 func (SpruceFence) ID() string                 { return "minecraft:spruce_fence" }
@@ -4046,6 +4206,7 @@ func (JungleFence) ID() string                 { return "minecraft:jungle_fence"
 func (AcaciaFence) ID() string                 { return "minecraft:acacia_fence" }
 func (CherryFence) ID() string                 { return "minecraft:cherry_fence" }
 func (DarkOakFence) ID() string                { return "minecraft:dark_oak_fence" }
+func (PaleOakFence) ID() string                { return "minecraft:pale_oak_fence" }
 func (MangroveFence) ID() string               { return "minecraft:mangrove_fence" }
 func (BambooFence) ID() string                 { return "minecraft:bamboo_fence" }
 func (SpruceDoor) ID() string                  { return "minecraft:spruce_door" }
@@ -4054,6 +4215,7 @@ func (JungleDoor) ID() string                  { return "minecraft:jungle_door" 
 func (AcaciaDoor) ID() string                  { return "minecraft:acacia_door" }
 func (CherryDoor) ID() string                  { return "minecraft:cherry_door" }
 func (DarkOakDoor) ID() string                 { return "minecraft:dark_oak_door" }
+func (PaleOakDoor) ID() string                 { return "minecraft:pale_oak_door" }
 func (MangroveDoor) ID() string                { return "minecraft:mangrove_door" }
 func (BambooDoor) ID() string                  { return "minecraft:bamboo_door" }
 func (EndRod) ID() string                      { return "minecraft:end_rod" }
@@ -4531,6 +4693,13 @@ func (Crafter) ID() string                      { return "minecraft:crafter" }
 func (TrialSpawner) ID() string                 { return "minecraft:trial_spawner" }
 func (Vault) ID() string                        { return "minecraft:vault" }
 func (HeavyCore) ID() string                    { return "minecraft:heavy_core" }
+func (PaleMossBlock) ID() string                { return "minecraft:pale_moss_block" }
+func (PaleMossCarpet) ID() string               { return "minecraft:pale_moss_carpet" }
+func (PaleHangingMoss) ID() string              { return "minecraft:pale_hanging_moss" }
+func (OpenEyeblossom) ID() string               { return "minecraft:open_eyeblossom" }
+func (ClosedEyeblossom) ID() string             { return "minecraft:closed_eyeblossom" }
+func (PottedOpenEyeblossom) ID() string         { return "minecraft:potted_open_eyeblossom" }
+func (PottedClosedEyeblossom) ID() string       { return "minecraft:potted_closed_eyeblossom" }
 
 var FromID = map[string]Block{
 	"minecraft:air":                                Air{},
@@ -4553,6 +4722,8 @@ var FromID = map[string]Block{
 	"minecraft:acacia_planks":                      AcaciaPlanks{},
 	"minecraft:cherry_planks":                      CherryPlanks{},
 	"minecraft:dark_oak_planks":                    DarkOakPlanks{},
+	"minecraft:pale_oak_wood":                      PaleOakWood{},
+	"minecraft:pale_oak_planks":                    PaleOakPlanks{},
 	"minecraft:mangrove_planks":                    MangrovePlanks{},
 	"minecraft:bamboo_planks":                      BambooPlanks{},
 	"minecraft:bamboo_mosaic":                      BambooMosaic{},
@@ -4563,6 +4734,7 @@ var FromID = map[string]Block{
 	"minecraft:acacia_sapling":                     AcaciaSapling{},
 	"minecraft:cherry_sapling":                     CherrySapling{},
 	"minecraft:dark_oak_sapling":                   DarkOakSapling{},
+	"minecraft:pale_oak_sapling":                   PaleOakSapling{},
 	"minecraft:mangrove_propagule":                 MangrovePropagule{},
 	"minecraft:bedrock":                            Bedrock{},
 	"minecraft:water":                              Water{},
@@ -4586,6 +4758,7 @@ var FromID = map[string]Block{
 	"minecraft:acacia_log":                         AcaciaLog{},
 	"minecraft:cherry_log":                         CherryLog{},
 	"minecraft:dark_oak_log":                       DarkOakLog{},
+	"minecraft:pale_oak_log":                       PaleOakLog{},
 	"minecraft:mangrove_log":                       MangroveLog{},
 	"minecraft:mangrove_roots":                     MangroveRoots{},
 	"minecraft:muddy_mangrove_roots":               MuddyMangroveRoots{},
@@ -4596,6 +4769,7 @@ var FromID = map[string]Block{
 	"minecraft:stripped_acacia_log":                StrippedAcaciaLog{},
 	"minecraft:stripped_cherry_log":                StrippedCherryLog{},
 	"minecraft:stripped_dark_oak_log":              StrippedDarkOakLog{},
+	"minecraft:stripped_pale_oak_log":              StrippedPaleOakLog{},
 	"minecraft:stripped_oak_log":                   StrippedOakLog{},
 	"minecraft:stripped_mangrove_log":              StrippedMangroveLog{},
 	"minecraft:stripped_bamboo_block":              StrippedBambooBlock{},
@@ -4614,6 +4788,7 @@ var FromID = map[string]Block{
 	"minecraft:stripped_acacia_wood":               StrippedAcaciaWood{},
 	"minecraft:stripped_cherry_wood":               StrippedCherryWood{},
 	"minecraft:stripped_dark_oak_wood":             StrippedDarkOakWood{},
+	"minecraft:stripped_pale_oak_wood":             StrippedPaleOakWood{},
 	"minecraft:stripped_mangrove_wood":             StrippedMangroveWood{},
 	"minecraft:oak_leaves":                         OakLeaves{},
 	"minecraft:spruce_leaves":                      SpruceLeaves{},
@@ -4622,6 +4797,7 @@ var FromID = map[string]Block{
 	"minecraft:acacia_leaves":                      AcaciaLeaves{},
 	"minecraft:cherry_leaves":                      CherryLeaves{},
 	"minecraft:dark_oak_leaves":                    DarkOakLeaves{},
+	"minecraft:pale_oak_leaves":                    PaleOakLeaves{},
 	"minecraft:mangrove_leaves":                    MangroveLeaves{},
 	"minecraft:azalea_leaves":                      AzaleaLeaves{},
 	"minecraft:flowering_azalea_leaves":            FloweringAzaleaLeaves{},
@@ -4709,6 +4885,7 @@ var FromID = map[string]Block{
 	"minecraft:fire":                               Fire{},
 	"minecraft:soul_fire":                          SoulFire{},
 	"minecraft:spawner":                            Spawner{},
+	"minecraft:creaking_heart":                     CreakingHeart{},
 	"minecraft:oak_stairs":                         OakStairs{},
 	"minecraft:chest":                              Chest{},
 	"minecraft:redstone_wire":                      RedstoneWire{},
@@ -4726,6 +4903,7 @@ var FromID = map[string]Block{
 	"minecraft:cherry_sign":                        CherrySign{},
 	"minecraft:jungle_sign":                        JungleSign{},
 	"minecraft:dark_oak_sign":                      DarkOakSign{},
+	"minecraft:pale_oak_sign":                      PaleOakSign{},
 	"minecraft:mangrove_sign":                      MangroveSign{},
 	"minecraft:bamboo_sign":                        BambooSign{},
 	"minecraft:oak_door":                           OakDoor{},
@@ -4739,6 +4917,7 @@ var FromID = map[string]Block{
 	"minecraft:cherry_wall_sign":                   CherryWallSign{},
 	"minecraft:jungle_wall_sign":                   JungleWallSign{},
 	"minecraft:dark_oak_wall_sign":                 DarkOakWallSign{},
+	"minecraft:pale_oak_wall_sign":                 PaleOakWallSign{},
 	"minecraft:mangrove_wall_sign":                 MangroveWallSign{},
 	"minecraft:bamboo_wall_sign":                   BambooWallSign{},
 	"minecraft:oak_hanging_sign":                   OakHangingSign{},
@@ -4748,6 +4927,7 @@ var FromID = map[string]Block{
 	"minecraft:cherry_hanging_sign":                CherryHangingSign{},
 	"minecraft:jungle_hanging_sign":                JungleHangingSign{},
 	"minecraft:dark_oak_hanging_sign":              DarkOakHangingSign{},
+	"minecraft:pale_oak_hanging_sign":              PaleOakHangingSign{},
 	"minecraft:crimson_hanging_sign":               CrimsonHangingSign{},
 	"minecraft:warped_hanging_sign":                WarpedHangingSign{},
 	"minecraft:mangrove_hanging_sign":              MangroveHangingSign{},
@@ -4759,6 +4939,7 @@ var FromID = map[string]Block{
 	"minecraft:cherry_wall_hanging_sign":           CherryWallHangingSign{},
 	"minecraft:jungle_wall_hanging_sign":           JungleWallHangingSign{},
 	"minecraft:dark_oak_wall_hanging_sign":         DarkOakWallHangingSign{},
+	"minecraft:pale_oak_wall_hanging_sign":         PaleOakWallHangingSign{},
 	"minecraft:mangrove_wall_hanging_sign":         MangroveWallHangingSign{},
 	"minecraft:crimson_wall_hanging_sign":          CrimsonWallHangingSign{},
 	"minecraft:warped_wall_hanging_sign":           WarpedWallHangingSign{},
@@ -4773,6 +4954,7 @@ var FromID = map[string]Block{
 	"minecraft:acacia_pressure_plate":              AcaciaPressurePlate{},
 	"minecraft:cherry_pressure_plate":              CherryPressurePlate{},
 	"minecraft:dark_oak_pressure_plate":            DarkOakPressurePlate{},
+	"minecraft:pale_oak_pressure_plate":            PaleOakPressurePlate{},
 	"minecraft:mangrove_pressure_plate":            MangrovePressurePlate{},
 	"minecraft:bamboo_pressure_plate":              BambooPressurePlate{},
 	"minecraft:redstone_ore":                       RedstoneOre{},
@@ -4824,6 +5006,7 @@ var FromID = map[string]Block{
 	"minecraft:acacia_trapdoor":                    AcaciaTrapdoor{},
 	"minecraft:cherry_trapdoor":                    CherryTrapdoor{},
 	"minecraft:dark_oak_trapdoor":                  DarkOakTrapdoor{},
+	"minecraft:pale_oak_trapdoor":                  PaleOakTrapdoor{},
 	"minecraft:mangrove_trapdoor":                  MangroveTrapdoor{},
 	"minecraft:bamboo_trapdoor":                    BambooTrapdoor{},
 	"minecraft:stone_bricks":                       StoneBricks{},
@@ -4852,12 +5035,19 @@ var FromID = map[string]Block{
 	"minecraft:melon_stem":                         MelonStem{},
 	"minecraft:vine":                               Vine{},
 	"minecraft:glow_lichen":                        GlowLichen{},
+	"minecraft:resin_clump":                        ResinClump{},
 	"minecraft:oak_fence_gate":                     OakFenceGate{},
 	"minecraft:brick_stairs":                       BrickStairs{},
 	"minecraft:stone_brick_stairs":                 StoneBrickStairs{},
 	"minecraft:mud_brick_stairs":                   MudBrickStairs{},
 	"minecraft:mycelium":                           Mycelium{},
 	"minecraft:lily_pad":                           LilyPad{},
+	"minecraft:resin_block":                        ResinBlock{},
+	"minecraft:resin_bricks":                       ResinBricks{},
+	"minecraft:resin_brick_stairs":                 ResinBrickStairs{},
+	"minecraft:resin_brick_slab":                   ResinBrickSlab{},
+	"minecraft:resin_brick_wall":                   ResinBrickWall{},
+	"minecraft:chiseled_resin_bricks":              ChiseledResinBricks{},
 	"minecraft:nether_bricks":                      NetherBricks{},
 	"minecraft:nether_brick_fence":                 NetherBrickFence{},
 	"minecraft:nether_brick_stairs":                NetherBrickStairs{},
@@ -4897,6 +5087,7 @@ var FromID = map[string]Block{
 	"minecraft:potted_acacia_sapling":              PottedAcaciaSapling{},
 	"minecraft:potted_cherry_sapling":              PottedCherrySapling{},
 	"minecraft:potted_dark_oak_sapling":            PottedDarkOakSapling{},
+	"minecraft:potted_pale_oak_sapling":            PottedPaleOakSapling{},
 	"minecraft:potted_mangrove_propagule":          PottedMangrovePropagule{},
 	"minecraft:potted_fern":                        PottedFern{},
 	"minecraft:potted_dandelion":                   PottedDandelion{},
@@ -4925,6 +5116,7 @@ var FromID = map[string]Block{
 	"minecraft:acacia_button":                      AcaciaButton{},
 	"minecraft:cherry_button":                      CherryButton{},
 	"minecraft:dark_oak_button":                    DarkOakButton{},
+	"minecraft:pale_oak_button":                    PaleOakButton{},
 	"minecraft:mangrove_button":                    MangroveButton{},
 	"minecraft:bamboo_button":                      BambooButton{},
 	"minecraft:skeleton_skull":                     SkeletonSkull{},
@@ -4993,6 +5185,7 @@ var FromID = map[string]Block{
 	"minecraft:acacia_stairs":                      AcaciaStairs{},
 	"minecraft:cherry_stairs":                      CherryStairs{},
 	"minecraft:dark_oak_stairs":                    DarkOakStairs{},
+	"minecraft:pale_oak_stairs":                    PaleOakStairs{},
 	"minecraft:mangrove_stairs":                    MangroveStairs{},
 	"minecraft:bamboo_stairs":                      BambooStairs{},
 	"minecraft:bamboo_mosaic_stairs":               BambooMosaicStairs{},
@@ -5079,6 +5272,7 @@ var FromID = map[string]Block{
 	"minecraft:acacia_slab":                        AcaciaSlab{},
 	"minecraft:cherry_slab":                        CherrySlab{},
 	"minecraft:dark_oak_slab":                      DarkOakSlab{},
+	"minecraft:pale_oak_slab":                      PaleOakSlab{},
 	"minecraft:mangrove_slab":                      MangroveSlab{},
 	"minecraft:bamboo_slab":                        BambooSlab{},
 	"minecraft:bamboo_mosaic_slab":                 BambooMosaicSlab{},
@@ -5106,6 +5300,7 @@ var FromID = map[string]Block{
 	"minecraft:acacia_fence_gate":                  AcaciaFenceGate{},
 	"minecraft:cherry_fence_gate":                  CherryFenceGate{},
 	"minecraft:dark_oak_fence_gate":                DarkOakFenceGate{},
+	"minecraft:pale_oak_fence_gate":                PaleOakFenceGate{},
 	"minecraft:mangrove_fence_gate":                MangroveFenceGate{},
 	"minecraft:bamboo_fence_gate":                  BambooFenceGate{},
 	"minecraft:spruce_fence":                       SpruceFence{},
@@ -5114,6 +5309,7 @@ var FromID = map[string]Block{
 	"minecraft:acacia_fence":                       AcaciaFence{},
 	"minecraft:cherry_fence":                       CherryFence{},
 	"minecraft:dark_oak_fence":                     DarkOakFence{},
+	"minecraft:pale_oak_fence":                     PaleOakFence{},
 	"minecraft:mangrove_fence":                     MangroveFence{},
 	"minecraft:bamboo_fence":                       BambooFence{},
 	"minecraft:spruce_door":                        SpruceDoor{},
@@ -5122,6 +5318,7 @@ var FromID = map[string]Block{
 	"minecraft:acacia_door":                        AcaciaDoor{},
 	"minecraft:cherry_door":                        CherryDoor{},
 	"minecraft:dark_oak_door":                      DarkOakDoor{},
+	"minecraft:pale_oak_door":                      PaleOakDoor{},
 	"minecraft:mangrove_door":                      MangroveDoor{},
 	"minecraft:bamboo_door":                        BambooDoor{},
 	"minecraft:end_rod":                            EndRod{},
@@ -5593,4 +5790,11 @@ var FromID = map[string]Block{
 	"minecraft:trial_spawner":                      TrialSpawner{},
 	"minecraft:vault":                              Vault{},
 	"minecraft:heavy_core":                         HeavyCore{},
+	"minecraft:pale_moss_block":                    PaleMossBlock{},
+	"minecraft:pale_moss_carpet":                   PaleMossCarpet{},
+	"minecraft:pale_hanging_moss":                  PaleHangingMoss{},
+	"minecraft:open_eyeblossom":                    OpenEyeblossom{},
+	"minecraft:closed_eyeblossom":                  ClosedEyeblossom{},
+	"minecraft:potted_open_eyeblossom":             PottedOpenEyeblossom{},
+	"minecraft:potted_closed_eyeblossom":           PottedClosedEyeblossom{},
 }
