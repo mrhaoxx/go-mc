@@ -20,6 +20,7 @@ import (
 	"bytes"
 
 	pk "github.com/mrhaoxx/go-mc/net/packet"
+	"go.uber.org/zap"
 )
 
 func clientAcceptTeleportation(p pk.Packet, c *Client) error {
@@ -31,6 +32,9 @@ func clientAcceptTeleportation(p pk.Packet, c *Client) error {
 	c.Inputs.Lock()
 	c.Inputs.TeleportID = int32(TeleportID)
 	c.Inputs.Unlock()
+
+	c.log.Info("Client: Accept teleportation", zap.Int32("teleportID", int32(TeleportID)), zap.String("name", c.player.Name))
+
 	return nil
 }
 
@@ -43,6 +47,7 @@ func clientMovePlayerPos(p pk.Packet, c *Client) error {
 	c.Inputs.Lock()
 	c.Inputs.Position = [3]float64{float64(X), float64(FeetY), float64(Z)}
 	c.Inputs.Unlock()
+	// fmt.Println("Client: Move player pos", X, FeetY, Z, OnGround)
 	return nil
 }
 

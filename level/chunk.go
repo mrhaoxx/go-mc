@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"math/bits"
 	"strconv"
 
@@ -417,7 +418,6 @@ func setNibble(arr []byte, i int, v byte) {
 	arr[bi] = (arr[bi] & mask) | ((v & 0xF) << shift)
 }
 
-// —— 修复后的光照接口 ——
 func (s *Section) SetSkyLight(i int, v int) {
 	if v < 0 {
 		v = 0
@@ -450,6 +450,118 @@ func (s *Section) SetBlock(i int, v BlocksState) {
 		s.BlockCount++
 	}
 	s.States.Set(i, v)
+}
+
+func (s *Section) RotateSection(yaw, pitch float64) {
+	// 将角度规范化到最近的90度倍数
+	yawSteps := int(math.Round(yaw / 90.0))
+	pitchSteps := int(math.Round(pitch / 90.0))
+
+	// 规范化到0-3的范围
+	yawSteps = ((yawSteps % 4) + 4) % 4
+	pitchSteps = ((pitchSteps % 4) + 4) % 4
+
+	// 如果没有旋转，直接返回
+	if yawSteps == 0 && pitchSteps == 0 {
+		return
+	}
+
+	// 创建新的数组来存储旋转后的数据
+	newStates := NewStatesPaletteContainer(16*16*16, 0)
+	newBiomes := NewBiomesPaletteContainer(4*4*4, 0)
+
+	var newSkyLight, newBlockLight []byte
+	if s.SkyLight != nil {
+		newSkyLight = make([]byte, len(s.SkyLight))
+	}
+	if s.BlockLight != nil {
+		newBlockLight = make([]byte, len(s.BlockLight))
+	}
+
+	// 对每个方块进行旋转
+	for x := 0; x < 16; x++ {
+		for y := 0; y < 16; y++ {
+			for z := 0; z < 16; z++ {
+				// 计算旋转后的坐标
+				newX, newY, newZ := rotateCoords(x, y, z, yawSteps, pitchSteps)
+
+				// 确保坐标在有效范围内
+				if newX >= 0 && newX < 16 && newY >= 0 && newY < 16 && newZ >= 0 && newZ < 16 {
+					oldIndex := x + y*16 + z*16*16
+					newIndex := newX + newY*16 + newZ*16*16
+
+					// 复制方块状态
+					newStates.Set(newIndex, s.States.Get(oldIndex))
+
+					// 复制光照数据
+					if newSkyLight != nil {
+						setNibble(newSkyLight, newIndex, getNibble(s.SkyLight, oldIndex))
+					}
+					if newBlockLight != nil {
+						setNibble(newBlockLight, newIndex, getNibble(s.BlockLight, oldIndex))
+					}
+				}
+			}
+		}
+	}
+
+	// 对生物群系进行旋转（4x4x4网格）
+	for x := 0; x < 4; x++ {
+		for y := 0; y < 4; y++ {
+			for z := 0; z < 4; z++ {
+				// 按比例缩放坐标进行旋转
+				scaledX := x * 4
+				scaledY := y * 4
+				scaledZ := z * 4
+				newScaledX, newScaledY, newScaledZ := rotateCoords(scaledX, scaledY, scaledZ, yawSteps, pitchSteps)
+				newX := newScaledX / 4
+				newY := newScaledY / 4
+				newZ := newScaledZ / 4
+
+				if newX >= 0 && newX < 4 && newY >= 0 && newY < 4 && newZ >= 0 && newZ < 4 {
+					oldIndex := x + y*4 + z*4*4
+					newIndex := newX + newY*4 + newZ*4*4
+					newBiomes.Set(newIndex, s.Biomes.Get(oldIndex))
+				}
+			}
+		}
+	}
+
+	// 更新Section数据
+	s.States = newStates
+	s.Biomes = newBiomes
+	s.SkyLight = newSkyLight
+	s.BlockLight = newBlockLight
+
+	// 重新计算方块数量
+	s.BlockCount = countNoneAirBlocks(s)
+}
+
+// rotateCoords 旋转坐标，支持90度倍数的旋转
+func rotateCoords(x, y, z, yawSteps, pitchSteps int) (int, int, int) {
+	// 将坐标移动到中心
+	fx := float64(x) - 7.5
+	fy := float64(y) - 7.5
+	fz := float64(z) - 7.5
+
+	// 应用yaw旋转（绕Y轴）
+	for i := 0; i < yawSteps; i++ {
+		// 绕Y轴旋转90度：(x,z) -> (-z,x)
+		fx, fz = -fz, fx
+	}
+
+	// 应用pitch旋转（绕X轴）
+	for i := 0; i < pitchSteps; i++ {
+		// 绕X轴旋转90度：(y,z) -> (-z,y)
+		fy, fz = -fz, fy
+	}
+
+	// 移回原来的位置并转换为整数
+	newX := int(math.Round(fx + 7.5))
+	newY := int(math.Round(fy + 7.5))
+	newZ := int(math.Round(fz + 7.5))
+
+	return newX, newY, newZ
 }
 
 func (s *Section) WriteTo(w io.Writer) (int64, error) {

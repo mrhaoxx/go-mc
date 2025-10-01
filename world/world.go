@@ -18,7 +18,6 @@ package world
 
 import (
 	"errors"
-	"math/rand"
 	"sync"
 
 	"go.uber.org/zap"
@@ -126,6 +125,7 @@ func (w *World) loadChunk(pos [2]int32) bool {
 	logger := w.log.With(zap.Int32("x", pos[0]), zap.Int32("z", pos[1]))
 	logger.Debug("Loading chunk")
 	c, err := w.chunkProvider.GetChunk(pos)
+
 	if err != nil {
 		if errors.Is(err, errChunkNotExist) {
 			logger.Debug("Generate chunk")
@@ -134,14 +134,24 @@ func (w *World) loadChunk(pos [2]int32) bool {
 
 			for s := range c.Sections {
 
-				for i := 0; i < 16+rand.Intn(1920); i++ {
-					stone := block.StateID(rand.Intn(len(block.StateList)))
-
-					c.Sections[s].SetBlock(i, stone)
-					c.Sections[s].SetSkyLight(i, rand.Intn(16))
-					c.Sections[s].SetBlockLight(i, rand.Intn(16))
+				for i := 0; i < 16*16*16; i++ {
+					c.Sections[s].SetSkyLight(i, 15)
+					c.Sections[s].SetBlockLight(i, 15)
 				}
 
+				if s != 10 {
+					continue
+				}
+
+				for i := 0; i < 16*16; i++ {
+					// if i == 10 {
+					stone := block.GrassBlock{}
+
+					c.Sections[s].SetBlock(i, block.ToStateID[stone])
+					c.Sections[s].SetSkyLight(i, 15)
+					c.Sections[s].SetBlockLight(i, 15)
+					// }
+				}
 			}
 			c.Status = level.StatusFull
 		} else if !errors.Is(err, ErrReachRateLimit) {
@@ -149,7 +159,7 @@ func (w *World) loadChunk(pos [2]int32) bool {
 			return false
 		}
 	}
-	w.chunks[pos] = &LoadedChunk{Chunk: c}
+	w.chunks[pos] = &LoadedChunk{Chunk: c, Pos: level.ChunkPos{pos[0], pos[1]}}
 	return true
 }
 
@@ -172,10 +182,15 @@ func (w *World) unloadChunk(pos [2]int32) {
 	delete(w.chunks, pos)
 }
 
+func (w *World) GetChunk(pos [2]int32) *LoadedChunk {
+	return w.chunks[pos]
+}
+
 type LoadedChunk struct {
 	sync.Mutex
 	viewers []ChunkViewer
 	*level.Chunk
+	Pos level.ChunkPos
 }
 
 func (lc *LoadedChunk) AddViewer(v ChunkViewer) {
@@ -201,4 +216,21 @@ func (lc *LoadedChunk) RemoveViewer(v ChunkViewer) bool {
 		}
 	}
 	return false
+}
+
+func (lc *LoadedChunk) SetBlock(x, y, z int, block level.BlocksState) {
+	lc.Lock()
+	defer lc.Unlock()
+	// lc.Chunk.Sections[y/16].SetBlock((x%16)*16*16+(y%16)*16+z%16, block)
+	lc.Chunk.Sections[y/16].SetBlock((y%16)*16*16+(z%16)*16+x%16, block)
+
+}
+
+func (lc *LoadedChunk) UpdateToViewers() {
+	lc.Lock()
+	defer lc.Unlock()
+	for _, v := range lc.viewers {
+		// fmt.Println("update chunk to viewers", lc.Pos)
+		v.ViewChunkLoad(lc.Pos, lc.Chunk)
+	}
 }

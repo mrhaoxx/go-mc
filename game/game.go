@@ -149,18 +149,20 @@ func (g *Game) AcceptPlayer(name string, id uuid.UUID, profilePubKey *user.Publi
 		logger.Error("Read player data error", zap.Error(err))
 		return
 	}
-	c := client.New(logger, conn, p)
+	c := client.New(logger, conn, p, g.overworld)
 
 	logger.Info("Player join", zap.Int32("eid", p.EntityID))
 	defer logger.Info("Player left")
 
 	c.SendLogin(g.overworld, p)
+
+	c.SendGameEvent(pk.UnsignedByte(13), pk.Float(0))
 	// c.SendServerData(g.serverInfo.Description(), g.serverInfo.FavIcon(), g.config.EnforceSecureProfile)
 
-	joinMsg := chat.TranslateMsg("multiplayer.player.joined", chat.Text(p.Name)).SetColor(chat.Yellow)
-	leftMsg := chat.TranslateMsg("multiplayer.player.left", chat.Text(p.Name)).SetColor(chat.Yellow)
-	g.globalChat.broadcastSystemChat(joinMsg, false)
-	defer g.globalChat.broadcastSystemChat(leftMsg, false)
+	// joinMsg := chat.TranslateMsg("multiplayer.player.joined", chat.Text(p.Name))
+	// leftMsg := chat.TranslateMsg("multiplayer.player.left", chat.Text(p.Name)).SetColor(chat.Yellow)
+	g.globalChat.broadcastSystemChat(chat.Text("Player joined"+p.Name), false)
+	defer g.globalChat.broadcastSystemChat(chat.Text("Player left"+p.Name), false)
 	c.AddHandler(packetid.ServerboundChat, g.globalChat.Handle)
 
 	g.playerList.addPlayer(c, p)

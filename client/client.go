@@ -24,6 +24,7 @@ import (
 
 	"github.com/mrhaoxx/go-mc/chat"
 	"github.com/mrhaoxx/go-mc/data/packetid"
+	"github.com/mrhaoxx/go-mc/level"
 	"github.com/mrhaoxx/go-mc/net"
 	pk "github.com/mrhaoxx/go-mc/net/packet"
 	"github.com/mrhaoxx/go-mc/net/queue"
@@ -35,6 +36,7 @@ type Client struct {
 	log      *zap.Logger
 	conn     *net.Conn
 	player   *world.Player
+	world    *world.World
 	queue    server.PacketQueue
 	handlers []PacketHandler
 	// pointer to the Player.Input
@@ -43,11 +45,12 @@ type Client struct {
 
 type PacketHandler func(p pk.Packet, c *Client) error
 
-func New(log *zap.Logger, conn *net.Conn, player *world.Player) *Client {
+func New(log *zap.Logger, conn *net.Conn, player *world.Player, world *world.World) *Client {
 	return &Client{
 		log:      log,
 		conn:     conn,
 		player:   player,
+		world:    world,
 		queue:    queue.NewChannelQueue[pk.Packet](256),
 		handlers: defaultHandlers[:],
 		Inputs:   &player.Inputs,
@@ -102,6 +105,8 @@ func (c *Client) startReceive(done func()) {
 				c.log.Error("Handle packet error", zap.Int32("id", packet.ID), zap.Error(err))
 				return
 			}
+		} else {
+			c.log.Info("Unhandled packet id", zap.Int32("id", packet.ID), zap.Int("len", len(packet.Data)), zap.String("type", string(packetid.ServerboundPacketID(packet.ID).String())))
 		}
 	}
 }
@@ -160,6 +165,85 @@ var defaultHandlers = [packetid.ServerboundPacketIDGuard]PacketHandler{
 			c.SendPlayerPosition(c.player.Position, c.player.Rotation)
 			return nil
 
+		case "setblock":
+
+			if len(args) != 4 {
+				c.SendSystemChat(chat.Message{
+					Text: "Usage: /setblock <x> <y> <z> <block>",
+				}, false)
+				return nil
+			}
+
+			var x, y, z int
+			fmt.Sscanf(args[0], "%d", &x)
+			fmt.Sscanf(args[1], "%d", &y)
+			fmt.Sscanf(args[2], "%d", &z)
+			var block int
+			fmt.Sscanf(args[3], "%d", &block)
+			c.SendSystemChat(chat.Message{
+				Text: "Setting block to " + args[3] + " at " + args[0] + " " + args[1] + " " + args[2],
+			}, false)
+			c.world.GetChunk([2]int32{int32(x / 16), int32(z / 16)}).SetBlock(x, y, z, level.BlocksState(block))
+			return nil
+
+		case "fill":
+			if len(args) != 7 {
+				c.SendSystemChat(chat.Message{
+					Text: "Usage: /fill <x1> <y1> <z1> <x2> <y2> <z2> <block>",
+				}, false)
+				return nil
+			}
+
+			var x1, y1, z1, x2, y2, z2 int
+			fmt.Sscanf(args[0], "%d", &x1)
+			fmt.Sscanf(args[1], "%d", &y1)
+			fmt.Sscanf(args[2], "%d", &z1)
+			fmt.Sscanf(args[3], "%d", &x2)
+			fmt.Sscanf(args[4], "%d", &y2)
+			fmt.Sscanf(args[5], "%d", &z2)
+			var block int
+			fmt.Sscanf(args[6], "%d", &block)
+
+			// Ensure coordinates are in the right order (min to max)
+			if x1 > x2 {
+				x1, x2 = x2, x1
+			}
+			if y1 > y2 {
+				y1, y2 = y2, y1
+			}
+			if z1 > z2 {
+				z1, z2 = z2, z1
+			}
+
+			// Calculate the volume
+			volume := (x2 - x1 + 1) * (y2 - y1 + 1) * (z2 - z1 + 1)
+
+			c.SendSystemChat(chat.Message{
+				Text: fmt.Sprintf("Filling %d blocks from (%d,%d,%d) to (%d,%d,%d) with block %s", volume, x1, y1, z1, x2, y2, z2, args[6]),
+			}, false)
+
+			// Fill the region
+			for x := x1; x <= x2; x++ {
+				for y := y1; y <= y2; y++ {
+					for z := z1; z <= z2; z++ {
+						var ck = c.world.GetChunk([2]int32{int32(x / 16), int32(z / 16)})
+						if ck == nil {
+							c.SendSystemChat(chat.Message{
+								Text: fmt.Sprintf("Chunk not found at (%d,%d)", x, z),
+							}, false)
+							continue
+						}
+
+						ck.SetBlock(x, y, z, level.BlocksState(block))
+					}
+				}
+			}
+
+			c.SendSystemChat(chat.Message{
+				Text: fmt.Sprintf("Successfully filled %d blocks", volume),
+			}, false)
+			return nil
+
 		default:
 			c.SendSystemChat(chat.Message{
 				Text: "Unknown command: " + cmd,
@@ -167,5 +251,53 @@ var defaultHandlers = [packetid.ServerboundPacketIDGuard]PacketHandler{
 		}
 		return nil
 
+	},
+	packetid.ServerboundChunkBatchReceived: func(p pk.Packet, c *Client) error {
+		var chunkBatch pk.Float
+		if err := p.Scan(&chunkBatch); err != nil {
+			return err
+		}
+		fmt.Println("Client: Chunk batch Received", chunkBatch)
+		return nil
+	},
+	packetid.ServerboundClientTickEnd: func(p pk.Packet, c *Client) error {
+
+		// fmt.Println("Client: Client tick end")
+		return nil
+	},
+	packetid.ServerboundPlayerInput: func(p pk.Packet, c *Client) error {
+		var playerInput pk.UnsignedByte
+		if err := p.Scan(&playerInput); err != nil {
+			return err
+		}
+		// to string
+		var playerInputString string
+
+		// Hex Mask	Field
+		// 0x01	Forward
+		// 0x02	Backward
+		// 0x04	Left
+		// 0x08	Right
+		// 0x10	Jump
+		// 0x20	Sneak
+		// 0x40	Sprint
+
+		for i := 0; i < 6; i++ {
+			if playerInput&(1<<i) != 0 {
+				playerInputString += fmt.Sprintf("%s ", []string{"Forward", "Backward", "Left", "Right", "Jump", "Sneak", "Sprint"}[i])
+			}
+		}
+
+		fmt.Println("Client: Player input", playerInputString)
+		c.log.Info("Client: Player input", zap.String("input", playerInputString), zap.String("name", c.player.Name))
+		return nil
+	},
+	packetid.ServerboundSwing: func(p pk.Packet, c *Client) error {
+		var swing pk.VarInt
+		if err := p.Scan(&swing); err != nil {
+			return err
+		}
+		c.log.Info("Client: Swing", zap.Int32("swing", int32(swing)), zap.String("name", c.player.Name))
+		return nil
 	},
 }

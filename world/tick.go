@@ -29,12 +29,20 @@ import (
 
 func (w *World) tickLoop() {
 	var n uint
-	for range time.Tick(time.Microsecond * 20) {
+	for range time.Tick(time.Millisecond * 20) {
 		w.tick(n)
 		n++
 	}
 }
 
+var i = 0
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
 func (w *World) tick(n uint) {
 	w.tickLock.Lock()
 	defer w.tickLock.Unlock()
@@ -42,6 +50,27 @@ func (w *World) tick(n uint) {
 	if n%8 == 0 {
 		w.subtickChunkLoad()
 	}
+
+	// if n%32 == 0 {
+	// 	for t, lc := range w.chunks {
+	// 		// lc.SetBlock(rand.Intn(16), rand.Intn(16), rand.Intn(16), block.ToStateID[block.Stone{}])]
+	// 		lc.Chunk.Sections[10].SetBlock(abs(i+int(t[0])*16)%(16*16*16), block.ToStateID[block.Stone{}])
+	// 	}
+	// 	i++
+	// }
+
+	// if n%128 == 0 {
+	// 	for _, lc := range w.chunks {
+	// 		lc.Chunk.Sections[10].RotateSection(180, 180)
+	// 	}
+	// }
+
+	if n%16 == 0 {
+		for _, lc := range w.chunks {
+			lc.UpdateToViewers()
+		}
+	}
+
 	w.subtickUpdatePlayers()
 	w.subtickUpdateEntities()
 }
@@ -61,7 +90,7 @@ LoadChunk:
 	for viewer, loader := range w.loaders {
 		loader.calcLoadingQueue()
 		for _, pos := range loader.loadQueue {
-			fmt.Println("loading chunk", pos)
+			// fmt.Println("loading chunk", pos)
 			if !loader.limiter.Allow() { // We reach the player limit. Skip
 				fmt.Println("reach player limit")
 				break
@@ -76,6 +105,7 @@ LoadChunk:
 			lc := w.chunks[pos]
 			lc.AddViewer(viewer)
 			lc.Lock()
+			// fmt.Println("update chunk", pos)
 			viewer.ViewChunkLoad(pos, lc.Chunk)
 			lc.Unlock()
 		}

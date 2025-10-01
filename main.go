@@ -30,7 +30,7 @@ import (
 	"github.com/mrhaoxx/go-mc/world"
 )
 
-var isDebug = flag.Bool("debug", true, "Enable debug log output")
+var isDebug = flag.Bool("debug", false, "Enable debug log output")
 
 func main() {
 	flag.Parse()

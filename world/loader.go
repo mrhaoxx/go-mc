@@ -17,7 +17,6 @@
 package world
 
 import (
-	"fmt"
 	"math"
 	"sort"
 
@@ -58,7 +57,7 @@ func (l *loader) calcLoadingQueue() {
 		// fmt.Println("pos", pos)
 		pos[0], pos[1] = pos[0]+v[0], pos[1]+v[1]
 		if _, ok := l.loaded[pos]; !ok {
-			fmt.Println("adding chunk", pos)
+			// fmt.Println("adding chunk", pos)
 			l.loadQueue = append(l.loadQueue, pos)
 		}
 	}

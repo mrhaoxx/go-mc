@@ -108,6 +108,14 @@ func (c *Client) SendLogin(w *world.World, p *world.Player) {
 	)
 }
 
+func (c *Client) SendGameEvent(event pk.UnsignedByte, value pk.Float) {
+	c.SendPacket(
+		packetid.ClientboundGameEvent,
+		pk.UnsignedByte(event),
+		pk.Float(value),
+	)
+}
+
 // func (c *Client) SendServerData(motd *chat.Message, favIcon string, enforceSecureProfile bool) {
 // 	c.SendPacket(
 // 		packetid.ClientboundServerData,
