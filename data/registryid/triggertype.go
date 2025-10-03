@@ -35,7 +35,7 @@ var TriggerType = []string{
 	"minecraft:fishing_rod_hooked",
 	"minecraft:channeled_lightning",
 	"minecraft:shot_crossbow",
-	"minecraft:killed_by_crossbow",
+	"minecraft:killed_by_arrow",
 	"minecraft:hero_of_the_village",
 	"minecraft:voluntary_exile",
 	"minecraft:slide_down_block",

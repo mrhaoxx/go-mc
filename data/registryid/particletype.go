@@ -37,6 +37,7 @@ var ParticleType = []string{
 	"minecraft:flame",
 	"minecraft:infested",
 	"minecraft:cherry_leaves",
+	"minecraft:pale_oak_leaves",
 	"minecraft:sculk_soul",
 	"minecraft:sculk_charge",
 	"minecraft:sculk_charge_pop",
@@ -49,6 +50,7 @@ var ParticleType = []string{
 	"minecraft:instant_effect",
 	"minecraft:item",
 	"minecraft:vibration",
+	"minecraft:trail",
 	"minecraft:item_slime",
 	"minecraft:item_cobweb",
 	"minecraft:item_snowball",
@@ -112,4 +114,5 @@ var ParticleType = []string{
 	"minecraft:ominous_spawning",
 	"minecraft:raid_omen",
 	"minecraft:trial_omen",
+	"minecraft:block_crumble",
 }

@@ -23,6 +23,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 
+	"github.com/google/uuid"
 	"github.com/mrhaoxx/go-mc/level"
 	"github.com/mrhaoxx/go-mc/level/block"
 	"github.com/mrhaoxx/go-mc/world/internal/bvh"
@@ -75,9 +76,10 @@ func New(logger *zap.Logger, provider ChunkProvider, config Config) (w *World) {
 	}
 	// Add a few sample entities near spawn for testing visibility in clients.
 	base := [3]float64{float64(config.SpawnPosition[0]) + 2, float64(config.SpawnPosition[1]) + 1, float64(config.SpawnPosition[2]) + 2}
+	zap.S().Infof("default base %f %f %f", base[0], base[1], base[2])
 	w.staticEntities = []simpleEntity{
-		{Entity: Entity{EntityID: NewEntityID(), Position: base, Rotation: [2]float32{0, 0}, OnGround: true}, TypeName: "minecraft:armor_stand"},
-		{Entity: Entity{EntityID: NewEntityID(), Position: [3]float64{base[0] + 2, base[1], base[2]}, Rotation: [2]float32{0, 0}, OnGround: true}, TypeName: "minecraft:pig"},
+		{Entity: Entity{EntityID: NewEntityID(), Position: base, Rotation: [2]float32{0, 0}, OnGround: true, UUID: uuid.New()}, TypeName: "minecraft:armor_stand"},
+		{Entity: Entity{EntityID: NewEntityID(), Position: [3]float64{base[0] + 2, base[1], base[2]}, Rotation: [2]float32{0, 0}, OnGround: true, UUID: uuid.New()}, TypeName: "minecraft:pig"},
 	}
 	go w.tickLoop()
 	return

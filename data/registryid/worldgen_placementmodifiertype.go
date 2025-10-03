@@ -17,6 +17,5 @@ var WorldgenPlacementModifierType = []string{
 	"minecraft:height_range",
 	"minecraft:in_square",
 	"minecraft:random_offset",
-	"minecraft:carving_mask",
 	"minecraft:fixed_placement",
 }

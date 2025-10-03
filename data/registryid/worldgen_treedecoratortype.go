@@ -5,6 +5,8 @@ package registryid
 var WorldgenTreeDecoratorType = []string{
 	"minecraft:trunk_vine",
 	"minecraft:leave_vine",
+	"minecraft:pale_moss",
+	"minecraft:creaking_heart",
 	"minecraft:cocoa",
 	"minecraft:beehive",
 	"minecraft:alter_ground",
