@@ -21,10 +21,9 @@ import (
 	"math"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/mrhaoxx/go-mc/chat"
 	"github.com/mrhaoxx/go-mc/world/internal/bvh"
+	"go.uber.org/zap"
 )
 
 func (w *World) tickLoop() {
@@ -46,6 +45,23 @@ func abs(x int) int {
 func (w *World) tick(n uint) {
 	w.tickLock.Lock()
 	defer w.tickLock.Unlock()
+
+	// Every 10 ticks, spawn an orbiting pig near each player.
+	// if n%100 == 0 {
+	// 	for _, p := range w.players {
+	// 		angle := rand.Float64() * 2 * math.Pi
+	// 		radius := 12.0
+	// 		pos := [3]float64{p.Position[0] + radius*math.Cos(angle), p.Position[1], p.Position[2] + radius*math.Sin(angle)}
+	// 		w.staticEntities = append(w.staticEntities, simpleEntity{
+	// 			Entity:      Entity{EntityID: NewEntityID(), Position: pos, Rotation: [2]float32{0, 0}, OnGround: true, UUID: uuid.New()},
+	// 			TypeName:    "minecraft:pig",
+	// 			OrbitCenter: p,
+	// 			OrbitRadius: radius,
+	// 			OrbitSpeed:  0.05, // ~1 rad/sec at 20 TPS
+	// 			Angle:       angle,
+	// 		})
+	// 	}
+	// }
 
 	if n%8 == 0 {
 		w.subtickChunkLoad()
@@ -199,6 +215,105 @@ func (w *World) subtickUpdatePlayers() {
 }
 
 func (w *World) subtickUpdateEntities() {
+	// Update and broadcast static/demo entities (including orbiting pigs).
+	for i := range w.staticEntities {
+		e := &w.staticEntities[i]
+		// Determine target position/rotation for this tick.
+		if e.OrbitCenter != nil {
+			e.Angle += e.OrbitSpeed
+			// Orbit horizontally around the player at OrbitRadius.
+			nx := e.OrbitCenter.Position[0] + e.OrbitRadius*math.Cos(e.Angle)
+			nz := e.OrbitCenter.Position[2] + e.OrbitRadius*math.Sin(e.Angle)
+			ny := e.OrbitCenter.Position[1]
+			e.pos0 = [3]float64{nx, ny, nz}
+			// Face tangentially along the orbit path.
+			yaw := float32((e.Angle + math.Pi/2) * 180 / math.Pi)
+			e.rot0 = [2]float32{yaw, 0}
+			// Tangential velocity (blocks/tick).
+			vx := -e.OrbitRadius * e.OrbitSpeed * math.Sin(e.Angle)
+			vz := e.OrbitRadius * e.OrbitSpeed * math.Cos(e.Angle)
+			e.vel0 = [3]float64{vx, 0, vz}
+		} else {
+			e.pos0 = e.Position
+			e.rot0 = e.Rotation
+			e.vel0 = e.Velocity
+		}
+
+		// Ensure entity is spawned for viewers in range.
+		condForView := bvh.TouchPoint[vec3d, aabb3d](vec3d(e.pos0))
+		w.playerViews.Find(condForView, func(n *playerViewNode) bool {
+			if _, ok := n.Value.EntitiesInView[e.EntityID]; !ok {
+				n.Value.ViewAddEntity(&e.Entity, e.TypeName)
+				n.Value.EntitiesInView[e.EntityID] = &e.Entity
+				n.Value.ViewSetEntityMotion(e.EntityID, e.vel0)
+			}
+			return true
+		})
+
+		// If entity moved/rotated, send movement updates to viewers.
+		var delta [3]int16
+		var rot [2]int8
+		moved := e.Position != e.pos0
+		rotated := e.Rotation != e.rot0
+		if moved {
+			delta = [3]int16{
+				int16((e.pos0[0] - e.Position[0]) * 32 * 128),
+				int16((e.pos0[1] - e.Position[1]) * 32 * 128),
+				int16((e.pos0[2] - e.Position[2]) * 32 * 128),
+			}
+		}
+		if rotated {
+			rot = [2]int8{
+				int8(e.rot0[0] * 256 / 360),
+				int8(e.rot0[1] * 256 / 360),
+			}
+		}
+		if moved || rotated {
+			sendMove := func(v EntityViewer) {}
+			switch {
+			case moved && rotated:
+				sendMove = func(v EntityViewer) {
+					v.ViewMoveEntityPosAndRot(e.EntityID, delta, rot, bool(e.OnGround))
+					v.ViewRotateHead(e.EntityID, rot[0])
+				}
+			case moved:
+				sendMove = func(v EntityViewer) {
+					v.ViewMoveEntityPos(e.EntityID, delta, bool(e.OnGround))
+				}
+			case rotated:
+				sendMove = func(v EntityViewer) {
+					v.ViewMoveEntityRot(e.EntityID, rot, bool(e.OnGround))
+					v.ViewRotateHead(e.EntityID, rot[0])
+				}
+			}
+			w.playerViews.Find(condForView, func(n *playerViewNode) bool {
+				if _, ok := n.Value.EntitiesInView[e.EntityID]; ok {
+					sendMove(n.Value.EntityViewer)
+				} else {
+					// Not visible yet — spawn now and mark.
+					n.Value.ViewAddEntity(&e.Entity, e.TypeName)
+					n.Value.EntitiesInView[e.EntityID] = &e.Entity
+					n.Value.ViewSetEntityMotion(e.EntityID, e.vel0)
+				}
+				return true
+			})
+			// Commit new pose and update velocity if changed.
+			e.Position = e.pos0
+			e.Rotation = e.rot0
+			const eps = 1e-3
+			if math.Abs(e.vel0[0]-e.Velocity[0]) > eps || math.Abs(e.vel0[1]-e.Velocity[1]) > eps || math.Abs(e.vel0[2]-e.Velocity[2]) > eps {
+				w.playerViews.Find(condForView, func(n *playerViewNode) bool {
+					if _, ok := n.Value.EntitiesInView[e.EntityID]; ok {
+						n.Value.ViewSetEntityMotion(e.EntityID, e.vel0)
+					}
+					return true
+				})
+				e.Velocity = e.vel0
+			}
+		}
+	}
+
+	// Players are also entities; update movement and ensure visibility to others.
 	// TODO: entity list should be traversed here, but players are the only entities now.
 	for _, e := range w.players {
 		// sending Update Entity Position pack to every player who can see it, when it moves.

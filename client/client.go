@@ -25,6 +25,7 @@ import (
 	"github.com/mrhaoxx/go-mc/chat"
 	"github.com/mrhaoxx/go-mc/data/packetid"
 	"github.com/mrhaoxx/go-mc/level"
+	"github.com/mrhaoxx/go-mc/level/block"
 	"github.com/mrhaoxx/go-mc/net"
 	pk "github.com/mrhaoxx/go-mc/net/packet"
 	"github.com/mrhaoxx/go-mc/net/queue"
@@ -298,6 +299,130 @@ var defaultHandlers = [packetid.ServerboundPacketIDGuard]PacketHandler{
 			return err
 		}
 		c.log.Info("Client: Swing", zap.Int32("swing", int32(swing)), zap.String("name", c.player.Name))
+		// 0 = main hand, 1 = offhand. Map to animation ids (0 main hand, 3 offhand).
+		var anim byte = 0
+		if int32(swing) == 1 {
+			anim = 3
+		}
+		c.world.BroadcastSwing(c.player, anim)
 		return nil
 	},
+	packetid.ServerboundUseItemOn:           clientUseItemOn,
+	packetid.ServerboundPlayerAction:        clientPlayerAction,
+	packetid.ServerboundSetCarriedItem:      clientSetCarriedItem,
+	packetid.ServerboundSetCreativeModeSlot: clientSetCreativeModeSlot,
+}
+
+// clientUseItemOn handles right-click block placement.
+func clientUseItemOn(p pk.Packet, c *Client) error {
+	var (
+		hand       pk.VarInt
+		pos        pk.Position
+		face       pk.VarInt
+		fx, fy, fz pk.Float
+		inside     pk.Boolean
+		seq        pk.VarInt
+	)
+	// Try full scan; if it fails, try without seq.
+	if err := p.Scan(&hand, &pos, &face, &fx, &fy, &fz, &inside, &seq); err != nil {
+		// Fallback: earlier variants without sequence
+		if err2 := p.Scan(&hand, &pos, &face, &fx, &fy, &fz, &inside); err2 != nil {
+			return err // return original error
+		}
+	}
+
+	fmt.Println("Client: UseItemOn", hand, pos, face, fx, fy, fz, inside, seq)
+	// Compute placement position based on clicked face
+	x, y, z := pos.X, pos.Y, pos.Z
+	switch int(face) {
+	case 0: // down
+		y--
+	case 1: // up
+		y++
+	case 2: // north (-z)
+		z--
+	case 3: // south (+z)
+		z++
+	case 4: // west (-x)
+		x--
+	case 5: // east (+x)
+		x++
+	}
+	ck := c.world.GetChunk([2]int32{int32(x >> 4), int32(z >> 4)})
+	if ck == nil {
+		c.log.Debug("UseItemOn in not-loaded chunk", zap.Int("x", x), zap.Int("y", y), zap.Int("z", z))
+		return nil
+	}
+	// Place a stone block for now (no inventory system yet)
+	ck.SetBlock(x, y, z, level.BlocksState(c.player.CarriedSlot))
+	ck.UpdateToViewers()
+	return nil
+}
+
+// clientPlayerAction handles actions like block breaking.
+func clientPlayerAction(p pk.Packet, c *Client) error {
+	var (
+		status pk.VarInt
+		pos    pk.Position
+		face   pk.VarInt
+		seq    pk.VarInt
+	)
+	if err := p.Scan(&status, &pos, &face, &seq); err != nil {
+		// Fallback: without sequence
+		if err2 := p.Scan(&status, &pos, &face); err2 != nil {
+			return err
+		}
+	}
+	fmt.Println("Client: Player action", status, pos, face, seq)
+	// Only handle finish-destroy to actually remove the block.
+	if int(status) == 2 || int(status) == 0 { // Stop/Finish digging
+		x, y, z := pos.X, pos.Y, pos.Z
+		ck := c.world.GetChunk([2]int32{int32(x >> 4), int32(z >> 4)})
+		if ck == nil {
+			return nil
+		}
+		ck.SetBlock(x, y, z, block.ToStateID[block.Air{}])
+		ck.UpdateToViewers()
+	}
+	return nil
+}
+
+// clientSetCarriedItem updates the player's selected hotbar slot.
+func clientSetCarriedItem(p pk.Packet, c *Client) error {
+	var slotS pk.Short
+	if err := p.Scan(&slotS); err != nil {
+		var slotV pk.VarInt
+		if err2 := p.Scan(&slotV); err2 != nil {
+			return err
+		}
+		slotS = pk.Short(slotV)
+	}
+	s := int32(slotS)
+	if s < 0 {
+		s = 0
+	}
+	if s > 8 {
+		s = 8
+	}
+	c.player.CarriedSlot = s
+	c.log.Info("Client: SetCarriedItem", zap.Int32("slot", s), zap.String("name", c.player.Name))
+	return nil
+}
+
+// clientSetCreativeModeSlot handles creative inventory edits. For now we parse the
+// slot index and ignore item data (no full inventory system is implemented yet).
+// Slot numbering follows vanilla (hotbar 36..44).
+func clientSetCreativeModeSlot(p pk.Packet, c *Client) error {
+	var slot pk.Short
+	// Read only the slot index; leave remaining payload unparsed intentionally.
+	if err := p.Scan(&slot); err != nil {
+		return err
+	}
+	idx := int32(slot)
+	// Update carried slot if player edited a hotbar index, to keep placement simple.
+	if idx >= 36 && idx <= 44 {
+		c.player.CarriedSlot = idx - 36
+	}
+	c.log.Info("Client: SetCreativeModeSlot", zap.Int32("slot", idx), zap.String("name", c.player.Name))
+	return nil
 }

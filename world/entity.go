@@ -19,6 +19,8 @@ package world
 import (
 	"math"
 	"sync/atomic"
+
+	"github.com/google/uuid"
 )
 
 var entityCounter atomic.Int32
@@ -34,6 +36,7 @@ type Entity struct {
 	OnGround
 	pos0 Position
 	rot0 Rotation
+	UUID uuid.UUID
 }
 
 type (

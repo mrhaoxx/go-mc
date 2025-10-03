@@ -41,6 +41,9 @@ type World struct {
 	// the data structure is used to determine quickly which players to send notify when entity moves.
 	playerViews playerViewTree
 	players     map[Client]*Player
+
+	// staticEntities are simple demo entities broadcast to clients for visibility testing.
+	staticEntities []simpleEntity
 }
 
 type Config struct {
@@ -70,8 +73,25 @@ func New(logger *zap.Logger, provider ChunkProvider, config Config) (w *World) {
 		players:       make(map[Client]*Player),
 		chunkProvider: provider,
 	}
+	// Add a few sample entities near spawn for testing visibility in clients.
+	base := [3]float64{float64(config.SpawnPosition[0]) + 2, float64(config.SpawnPosition[1]) + 1, float64(config.SpawnPosition[2]) + 2}
+	w.staticEntities = []simpleEntity{
+		{Entity: Entity{EntityID: NewEntityID(), Position: base, Rotation: [2]float32{0, 0}, OnGround: true}, TypeName: "minecraft:armor_stand"},
+		{Entity: Entity{EntityID: NewEntityID(), Position: [3]float64{base[0] + 2, base[1], base[2]}, Rotation: [2]float32{0, 0}, OnGround: true}, TypeName: "minecraft:pig"},
+	}
 	go w.tickLoop()
 	return
+}
+
+type simpleEntity struct {
+	Entity
+	TypeName    string
+	OrbitCenter *Player
+	OrbitRadius float64
+	OrbitSpeed  float64 // radians per tick
+	Angle       float64 // current angle
+	Velocity    [3]float64
+	vel0        [3]float64
 }
 
 func (w *World) Name() string {
@@ -186,6 +206,18 @@ func (w *World) GetChunk(pos [2]int32) *LoadedChunk {
 	return w.chunks[pos]
 }
 
+// BroadcastSwing sends an animation for the given player entity to all viewers in range.
+func (w *World) BroadcastSwing(p *Player, animation byte) {
+	cond := bvh.TouchPoint[vec3d, aabb3d](vec3d(p.Position))
+	w.playerViews.Find(cond, func(n *playerViewNode) bool {
+		if n.Value.Player == p {
+			return true
+		}
+		n.Value.ViewAnimate(p.EntityID, animation)
+		return true
+	})
+}
+
 type LoadedChunk struct {
 	sync.Mutex
 	viewers []ChunkViewer
@@ -221,6 +253,7 @@ func (lc *LoadedChunk) RemoveViewer(v ChunkViewer) bool {
 func (lc *LoadedChunk) SetBlock(x, y, z int, block level.BlocksState) {
 	lc.Lock()
 	defer lc.Unlock()
+	y += 64
 	// lc.Chunk.Sections[y/16].SetBlock((x%16)*16*16+(y%16)*16+z%16, block)
 	lc.Chunk.Sections[y/16].SetBlock((y%16)*16*16+(z%16)*16+x%16, block)
 

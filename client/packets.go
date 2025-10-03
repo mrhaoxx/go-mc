@@ -29,6 +29,7 @@ import (
 	"github.com/mrhaoxx/go-mc/chat"
 	"github.com/mrhaoxx/go-mc/chat/sign"
 	"github.com/mrhaoxx/go-mc/data/packetid"
+	"github.com/mrhaoxx/go-mc/data/registryid"
 	"github.com/mrhaoxx/go-mc/level"
 	pk "github.com/mrhaoxx/go-mc/net/packet"
 	"github.com/mrhaoxx/go-mc/world"
@@ -207,16 +208,37 @@ func (c *Client) SendForgetLevelChunk(pos level.ChunkPos) {
 }
 
 func (c *Client) SendAddPlayer(p *world.Player) {
-	// c.SendPacket(
-	// 	packetid.Clientbound,
-	// 	pk.VarInt(p.EntityID),
-	// 	pk.UUID(p.UUID),
-	// 	pk.Double(p.Position[0]),
-	// 	pk.Double(p.Position[1]),
-	// 	pk.Double(p.Position[2]),
-	// 	pk.Angle(p.Rotation[0]),
-	// 	pk.Angle(p.Rotation[1]),
-	// )
+	// Spawn the player entity for viewers.
+	// Use AddEntity with entity type set to "minecraft:player".
+	yaw := int8(p.Rotation[0] * 256 / 360)
+	pitch := int8(p.Rotation[1] * 256 / 360)
+	// lookup entity type id
+	var typeID int32 = -1
+	for i, name := range registryid.EntityType {
+		if name == "minecraft:player" {
+			typeID = int32(i)
+			break
+		}
+	}
+	if typeID < 0 {
+		zap.L().Warn("entity type not found", zap.String("type", "minecraft:player"))
+		return
+	}
+	c.SendPacket(
+		packetid.ClientboundAddEntity,
+		pk.VarInt(p.EntityID),
+		pk.UUID(p.UUID),
+		pk.VarInt(typeID),
+		pk.Double(p.Position[0]),
+		pk.Double(p.Position[1]),
+		pk.Double(p.Position[2]),
+		pk.Angle(yaw),
+		pk.Angle(pitch),
+		pk.Angle(yaw), // head yaw
+		pk.Short(0),   // vel x
+		pk.Short(0),   // vel y
+		pk.Short(0),   // vel z
+	)
 }
 
 func (c *Client) SendMoveEntitiesPos(eid int32, delta [3]int16, onGround bool) {
@@ -381,4 +403,79 @@ func (c *Client) ViewRotateHead(id int32, yaw int8) {
 
 func (c *Client) ViewTeleportEntity(id int32, pos [3]float64, rot [2]int8, onGround bool) {
 	c.SendTeleportEntity(id, pos, rot, onGround)
+}
+
+func (c *Client) ViewSetEntityMotion(id int32, velocity [3]float64) {
+	c.SendSetEntityMotion(id, velocity)
+}
+
+// SendSetEntityMotion sets an entity's velocity (blocks/tick scaled by 8000).
+func (c *Client) SendSetEntityMotion(eid int32, velocity [3]float64) {
+	clamp := func(x int32) int16 {
+		if x > 32767 {
+			return 32767
+		}
+		if x < -32768 {
+			return -32768
+		}
+		return int16(x)
+	}
+	vx := clamp(int32(velocity[0] * 8000))
+	vy := clamp(int32(velocity[1] * 8000))
+	vz := clamp(int32(velocity[2] * 8000))
+	c.SendPacket(
+		packetid.ClientboundSetEntityMotion,
+		pk.VarInt(eid),
+		pk.Short(vx),
+		pk.Short(vy),
+		pk.Short(vz),
+	)
+}
+
+// ViewAnimate sends an animation for an entity to this client.
+func (c *Client) ViewAnimate(id int32, animation byte) {
+	c.SendAnimate(id, animation)
+}
+
+// SendAnimate emits ClientboundAnimate for the given entity and animation.
+func (c *Client) SendAnimate(eid int32, animation byte) {
+	c.SendPacket(
+		packetid.ClientboundAnimate,
+		pk.VarInt(eid),
+		pk.UnsignedByte(animation),
+	)
+}
+
+// ViewAddEntity spawns a generic entity for the viewer by registry name.
+func (c *Client) ViewAddEntity(e *world.Entity, typeName string) {
+	// Resolve entity type ID
+	var typeID int32 = -1
+	for i, name := range registryid.EntityType {
+		if name == typeName {
+			typeID = int32(i)
+			break
+		}
+	}
+	if typeID < 0 {
+		zap.L().Warn("entity type not found", zap.String("type", typeName))
+		return
+	}
+	yaw := int8(e.Rotation[0] * 256 / 360)
+	pitch := int8(e.Rotation[1] * 256 / 360)
+	c.SendPacket(
+		packetid.ClientboundAddEntity,
+		pk.VarInt(e.EntityID),
+		pk.UUID(e.UUID),
+		pk.VarInt(typeID),
+		pk.Double(e.Position[0]),
+		pk.Double(e.Position[1]),
+		pk.Double(e.Position[2]),
+		pk.Angle(pitch),
+		pk.Angle(yaw),
+		pk.Angle(yaw),
+		pk.VarInt(0),
+		pk.Short(0),
+		pk.Short(0),
+		pk.Short(0),
+	)
 }
