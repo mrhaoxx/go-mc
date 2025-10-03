@@ -235,9 +235,10 @@ func (c *Client) SendAddPlayer(p *world.Player) {
 		pk.Angle(yaw),
 		pk.Angle(pitch),
 		pk.Angle(yaw), // head yaw
-		pk.Short(0),   // vel x
-		pk.Short(0),   // vel y
-		pk.Short(0),   // vel z
+		pk.VarInt(0),
+		pk.Short(0), // vel x
+		pk.Short(0), // vel y
+		pk.Short(0), // vel z
 	)
 }
 
