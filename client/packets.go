@@ -30,6 +30,7 @@ import (
 	"github.com/mrhaoxx/go-mc/chat/sign"
 	"github.com/mrhaoxx/go-mc/data/packetid"
 	"github.com/mrhaoxx/go-mc/data/registryid"
+	"github.com/mrhaoxx/go-mc/hpcworld"
 	"github.com/mrhaoxx/go-mc/level"
 	pk "github.com/mrhaoxx/go-mc/net/packet"
 	"github.com/mrhaoxx/go-mc/world"
@@ -390,8 +391,8 @@ func (c *Client) SendSetChunkCacheCenter(chunkPos [2]int32) {
 	)
 }
 
-func (c *Client) ViewChunkLoad(pos level.ChunkPos, chunk *level.Chunk) {
-	c.SendLevelChunkWithLight(pos, chunk)
+func (c *Client) ViewChunkLoad(pos level.ChunkPos, chunk *hpcworld.Chunk) {
+	c.SendLevelChunkWithLight(pos, hpcworld.LevelChunkFromHPC(chunk))
 }
 func (c *Client) ViewChunkUnload(pos level.ChunkPos)   { c.SendForgetLevelChunk(pos) }
 func (c *Client) ViewAddPlayer(p *world.Player)        { c.SendAddPlayer(p) }

@@ -132,25 +132,25 @@ LoadChunk:
 			lc.Unlock()
 		}
 	}
-	for viewer, loader := range w.loaders {
-		loader.calcUnusedChunks()
-		for _, pos := range loader.unloadQueue {
-			delete(loader.loaded, pos)
-			if !w.chunks[pos].RemoveViewer(viewer) {
-				w.log.Panic("viewer is not found in the loaded chunk")
-			}
-			viewer.ViewChunkUnload(pos)
-		}
-	}
-	var unloadQueue [][2]int32
-	for pos, chunk := range w.chunks {
-		if len(chunk.viewers) == 0 {
-			unloadQueue = append(unloadQueue, pos)
-		}
-	}
-	for i := range unloadQueue {
-		w.unloadChunk(unloadQueue[i])
-	}
+	// for viewer, loader := range w.loaders {
+	// 	loader.calcUnusedChunks()
+	// 	for _, pos := range loader.unloadQueue {
+	// 		delete(loader.loaded, pos)
+	// 		if !w.chunks[pos].RemoveViewer(viewer) {
+	// 			w.log.Panic("viewer is not found in the loaded chunk")
+	// 		}
+	// 		viewer.ViewChunkUnload(pos)
+	// 	}
+	// }
+	// var unloadQueue [][2]int32
+	// for pos, chunk := range w.chunks {
+	// 	if len(chunk.viewers) == 0 {
+	// 		unloadQueue = append(unloadQueue, pos)
+	// 	}
+	// }
+	// for i := range unloadQueue {
+	// 	w.unloadChunk(unloadQueue[i])
+	// }
 }
 
 func (w *World) subtickUpdatePlayers() {

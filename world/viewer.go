@@ -18,6 +18,7 @@ package world
 
 import (
 	"github.com/mrhaoxx/go-mc/chat"
+	"github.com/mrhaoxx/go-mc/hpcworld"
 	"github.com/mrhaoxx/go-mc/level"
 )
 
@@ -31,7 +32,7 @@ type Client interface {
 }
 
 type ChunkViewer interface {
-	ViewChunkLoad(pos level.ChunkPos, c *level.Chunk)
+	ViewChunkLoad(pos level.ChunkPos, c *hpcworld.Chunk)
 	ViewChunkUnload(pos level.ChunkPos)
 }
 

@@ -17,23 +17,21 @@
 package world
 
 import (
-	"errors"
-	"math/rand"
 	"sync"
 
 	"go.uber.org/zap"
 	"golang.org/x/time/rate"
 
 	"github.com/google/uuid"
+	"github.com/mrhaoxx/go-mc/hpcworld"
 	"github.com/mrhaoxx/go-mc/level"
-	"github.com/mrhaoxx/go-mc/level/block"
 	"github.com/mrhaoxx/go-mc/world/internal/bvh"
 )
 
 type World struct {
-	log           *zap.Logger
-	config        Config
-	chunkProvider ChunkProvider
+	log    *zap.Logger
+	config Config
+	// chunkProvider ChunkProvider
 
 	chunks    map[[2]int32]*LoadedChunk
 	loaders   map[ChunkViewer]*loader
@@ -67,14 +65,14 @@ type (
 	playerViewTree = bvh.Tree[float64, aabb3d, playerView]
 )
 
-func New(logger *zap.Logger, provider ChunkProvider, config Config) (w *World) {
+func New(logger *zap.Logger, config Config) (w *World) {
 	w = &World{
-		log:           logger,
-		config:        config,
-		chunks:        make(map[[2]int32]*LoadedChunk),
-		loaders:       make(map[ChunkViewer]*loader),
-		players:       make(map[Client]*Player),
-		chunkProvider: provider,
+		log:     logger,
+		config:  config,
+		chunks:  make(map[[2]int32]*LoadedChunk),
+		loaders: make(map[ChunkViewer]*loader),
+		players: make(map[Client]*Player),
+		// chunkProvider: provider,
 	}
 	// Add a few sample entities near spawn for testing visibility in clients.
 	base := [3]float64{float64(config.SpawnPosition[0]) + 2, float64(config.SpawnPosition[1]) + 1, float64(config.SpawnPosition[2]) + 2}
@@ -148,65 +146,71 @@ func (w *World) RemovePlayer(c Client, p *Player) {
 func (w *World) loadChunk(pos [2]int32) bool {
 	logger := w.log.With(zap.Int32("x", pos[0]), zap.Int32("z", pos[1]))
 	logger.Debug("Loading chunk")
-	c, err := w.chunkProvider.GetChunk(pos)
+	// c, err := w.chunkProvider.GetChunk(pos)
+	c := hpcworld.LoadChunk(pos[0], pos[1])
 
-	if err != nil {
-		if errors.Is(err, errChunkNotExist) {
-			logger.Debug("Generate chunk")
-			// TODO: because there is no chunk generator，generate an empty chunk and mark it as generated
-			c = level.EmptyChunk(24)
+	// if err != nil {
+	// 	if errors.Is(err, errChunkNotExist) {
+	// 		logger.Debug("Generate chunk")
+	// 		// TODO: because there is no chunk generator，generate an empty chunk and mark it as generated
+	// 		c = level.EmptyChunk(24)
 
-			for s := range c.Sections {
+	// 		var t level.BiomesState
+	// 		t.UnmarshalText([]byte("minecraft:plains"))
 
-				for i := 0; i < 16*16*16; i++ {
-					rnd := rand.Intn(16)
-					c.Sections[s].SetSkyLight(i, rnd)
-					c.Sections[s].SetBlockLight(i, rnd)
-					c.Sections[s].Biomes.Set(i, 0)
-				}
+	// 		for s := range c.Sections {
+	// 			for b := 0; b < 4*4*4; b++ {
+	// 				c.Sections[s].Biomes.Set(b, t)
+	// 			}
+	// 			for i := 0; i < 16*16*16; i++ {
+	// 				rnd := rand.Intn(16)
 
-				if s != 10 {
-					continue
-				}
+	// 				c.Sections[s].SetSkyLight(i, rnd)
+	// 				c.Sections[s].SetBlockLight(i, rnd)
+	// 			}
 
-				for i := 0; i < 16*16; i++ {
-					// if i == 10 {
-					stone := block.GrassBlock{}
+	// 			if s != 10 {
+	// 				continue
+	// 			}
 
-					c.Sections[s].SetBlock(i, block.ToStateID[stone])
-					c.Sections[s].SetSkyLight(i, i%16)
-					c.Sections[s].SetBlockLight(i, i%16)
-					// }
-				}
-			}
-			c.Status = level.StatusFull
-		} else if !errors.Is(err, ErrReachRateLimit) {
-			logger.Error("GetChunk error", zap.Error(err))
-			return false
-		}
-	}
+	// 			for i := 0; i < 16*16; i++ {
+	// 				// if i == 10 {
+	// 				stone := block.GrassBlock{}
+
+	// 				c.Sections[s].SetBlock(i, block.ToStateID[stone])
+	// 				c.Sections[s].SetSkyLight(i, i%16)
+	// 				c.Sections[s].SetBlockLight(i, i%16)
+	// 				// }
+	// 			}
+	// 		}
+	// 		c.Status = level.StatusFull
+	// 	} else if !errors.Is(err, ErrReachRateLimit) {
+	// 		logger.Error("GetChunk error", zap.Error(err))
+	// 		return false
+	// 	}
+	// }
 	w.chunks[pos] = &LoadedChunk{Chunk: c, Pos: level.ChunkPos{pos[0], pos[1]}}
 	return true
 }
 
-func (w *World) unloadChunk(pos [2]int32) {
-	logger := w.log.With(zap.Int32("x", pos[0]), zap.Int32("z", pos[1]))
-	logger.Debug("Unloading chunk")
-	c, ok := w.chunks[pos]
-	if !ok {
-		logger.Panic("Unloading an non-exist chunk")
-	}
-	// notify all viewers who are watching the chunk to unload the chunk
-	for _, viewer := range c.viewers {
-		viewer.ViewChunkUnload(pos)
-	}
-	// move the chunk to provider and save
-	err := w.chunkProvider.PutChunk(pos, c.Chunk)
-	if err != nil {
-		logger.Error("Store chunk data error", zap.Error(err))
-	}
-	delete(w.chunks, pos)
-}
+// func (w *World) unloadChunk(pos [2]int32) {
+// 	logger := w.log.With(zap.Int32("x", pos[0]), zap.Int32("z", pos[1]))
+// 	logger.Debug("Unloading chunk")
+// 	c, ok := w.chunks[pos]
+// 	if !ok {
+// 		logger.Panic("Unloading an non-exist chunk")
+// 	}
+// 	// notify all viewers who are watching the chunk to unload the chunk
+// 	for _, viewer := range c.viewers {
+// 		viewer.ViewChunkUnload(pos)
+// 	}
+// 	// move the chunk to provider and save
+// 	err := w.chunkProvider.PutChunk(pos, c.Chunk)
+// 	if err != nil {
+// 		logger.Error("Store chunk data error", zap.Error(err))
+// 	}
+// 	delete(w.chunks, pos)
+// }
 
 func (w *World) GetChunk(pos [2]int32) *LoadedChunk {
 	return w.chunks[pos]
@@ -227,7 +231,8 @@ func (w *World) BroadcastSwing(p *Player, animation byte) {
 type LoadedChunk struct {
 	sync.Mutex
 	viewers []ChunkViewer
-	*level.Chunk
+	// *level.Chunk
+	*hpcworld.Chunk
 	Pos level.ChunkPos
 }
 
@@ -261,7 +266,19 @@ func (lc *LoadedChunk) SetBlock(x, y, z int, block level.BlocksState) {
 	defer lc.Unlock()
 	y += 64
 	// lc.Chunk.Sections[y/16].SetBlock((x%16)*16*16+(y%16)*16+z%16, block)
-	lc.Chunk.Sections[y/16].SetBlock((y%16)*16*16+(z%16)*16+x%16, block)
+
+	// get all >0 values
+
+	tx := x % 16
+	if tx < 0 {
+		tx += 16
+	}
+	tz := z % 16
+	if tz < 0 {
+		tz += 16
+	}
+
+	lc.Chunk.Sections[y/16].SetBlock((y%16)*16*16+(tz%16)*16+tx%16, int32(block))
 
 }
 

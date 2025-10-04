@@ -20,16 +20,15 @@ import (
 	"compress/gzip"
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 
 	"github.com/google/uuid"
 	"golang.org/x/time/rate"
 
+	"github.com/mrhaoxx/go-mc/hpcworld"
 	"github.com/mrhaoxx/go-mc/level"
 	"github.com/mrhaoxx/go-mc/save"
-	"github.com/mrhaoxx/go-mc/save/region"
 	"github.com/mrhaoxx/go-mc/yggdrasil/user"
 )
 
@@ -46,6 +45,8 @@ func NewProvider(dir string, limiter *rate.Limiter) ChunkProvider {
 var ErrReachRateLimit = errors.New("reach rate limit")
 
 func (p *ChunkProvider) GetChunk(pos [2]int32) (c *level.Chunk, errRet error) {
+
+	hpcworld.LoadChunk(pos[0], pos[1])
 
 	// fmt.Println("GetChunk", pos)
 	// if !p.limiter.Allow() {
@@ -82,16 +83,6 @@ func (p *ChunkProvider) GetChunk(pos [2]int32) (c *level.Chunk, errRet error) {
 	// 	return nil, fmt.Errorf("load chunk data fail: %w", err)
 	// }
 	return nil, errChunkNotExist
-}
-
-func (p *ChunkProvider) getRegion(rx, rz int) (*region.Region, error) {
-	filename := fmt.Sprintf("r.%d.%d.mca", rx, rz)
-	path := filepath.Join(p.dir, filename)
-	r, err := region.Open(path)
-	if errors.Is(err, fs.ErrNotExist) {
-		r, err = region.Create(path)
-	}
-	return r, err
 }
 
 func (p *ChunkProvider) PutChunk(pos [2]int32, c *level.Chunk) (err error) {

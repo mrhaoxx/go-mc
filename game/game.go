@@ -108,7 +108,7 @@ func createWorld(logger *zap.Logger, path string, config *Config) (*world.World,
 	// }
 	overworld := world.New(
 		logger.Named("overworld"),
-		world.NewProvider(filepath.Join(path, "region"), config.ChunkLoadingLimiter.Limiter()),
+		// world.NewProvider(filepath.Join(path, "region"), config.ChunkLoadingLimiter.Limiter()),
 		world.Config{
 			ViewDistance: config.ViewDistance,
 			// SpawnAngle:    lv.Data.SpawnAngle,
@@ -131,7 +131,7 @@ func (g *Game) AcceptPlayer(name string, id uuid.UUID, profilePubKey *user.Publi
 		p = &world.Player{
 			Entity: world.Entity{
 				EntityID: world.NewEntityID(),
-				Position: [3]float64{48, 100, 35},
+				Position: [3]float64{0, 100, 0},
 				Rotation: [2]float32{},
 			},
 			Name:           name,
