@@ -17,7 +17,6 @@
 package game
 
 import (
-	"compress/gzip"
 	"context"
 	"errors"
 	"os"
@@ -32,7 +31,6 @@ import (
 	"github.com/mrhaoxx/go-mc/data/packetid"
 	"github.com/mrhaoxx/go-mc/net"
 	pk "github.com/mrhaoxx/go-mc/net/packet"
-	"github.com/mrhaoxx/go-mc/save"
 	"github.com/mrhaoxx/go-mc/server"
 	"github.com/mrhaoxx/go-mc/world"
 	"github.com/mrhaoxx/go-mc/yggdrasil/user"
@@ -96,25 +94,25 @@ func NewGame(log *zap.Logger, config Config, pingList *server.PlayerList, server
 }
 
 func createWorld(logger *zap.Logger, path string, config *Config) (*world.World, error) {
-	f, err := os.Open(filepath.Join(path, "level.dat"))
-	if err != nil {
-		return nil, err
-	}
-	r, err := gzip.NewReader(f)
-	if err != nil {
-		return nil, err
-	}
-	lv, err := save.ReadLevel(r)
-	if err != nil {
-		return nil, err
-	}
+	// f, err := os.Open(filepath.Join(path, "level.dat"))
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// r, err := gzip.NewReader(f)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// lv, err := save.ReadLevel(r)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	overworld := world.New(
 		logger.Named("overworld"),
 		world.NewProvider(filepath.Join(path, "region"), config.ChunkLoadingLimiter.Limiter()),
 		world.Config{
-			ViewDistance:  config.ViewDistance,
-			SpawnAngle:    lv.Data.SpawnAngle,
-			SpawnPosition: [3]int32{lv.Data.SpawnX, lv.Data.SpawnY, lv.Data.SpawnZ},
+			ViewDistance: config.ViewDistance,
+			// SpawnAngle:    lv.Data.SpawnAngle,
+			SpawnPosition: [3]int32{0, 100, 0},
 		},
 	)
 	return overworld, nil

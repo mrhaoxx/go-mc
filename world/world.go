@@ -18,6 +18,7 @@ package world
 
 import (
 	"errors"
+	"math/rand"
 	"sync"
 
 	"go.uber.org/zap"
@@ -34,9 +35,10 @@ type World struct {
 	config        Config
 	chunkProvider ChunkProvider
 
-	chunks   map[[2]int32]*LoadedChunk
-	loaders  map[ChunkViewer]*loader
-	tickLock sync.Mutex
+	chunks    map[[2]int32]*LoadedChunk
+	loaders   map[ChunkViewer]*loader
+	tickLock  sync.Mutex
+	tickCount uint
 
 	// playerViews is a BVH tree，storing the visual range collision boxes of each player.
 	// the data structure is used to determine quickly which players to send notify when entity moves.
@@ -157,8 +159,10 @@ func (w *World) loadChunk(pos [2]int32) bool {
 			for s := range c.Sections {
 
 				for i := 0; i < 16*16*16; i++ {
-					c.Sections[s].SetSkyLight(i, 15)
-					c.Sections[s].SetBlockLight(i, 15)
+					rnd := rand.Intn(16)
+					c.Sections[s].SetSkyLight(i, rnd)
+					c.Sections[s].SetBlockLight(i, rnd)
+					c.Sections[s].Biomes.Set(i, 0)
 				}
 
 				if s != 10 {
@@ -170,8 +174,8 @@ func (w *World) loadChunk(pos [2]int32) bool {
 					stone := block.GrassBlock{}
 
 					c.Sections[s].SetBlock(i, block.ToStateID[stone])
-					c.Sections[s].SetSkyLight(i, 15)
-					c.Sections[s].SetBlockLight(i, 15)
+					c.Sections[s].SetSkyLight(i, i%16)
+					c.Sections[s].SetBlockLight(i, i%16)
 					// }
 				}
 			}
@@ -267,5 +271,39 @@ func (lc *LoadedChunk) UpdateToViewers() {
 	for _, v := range lc.viewers {
 		// fmt.Println("update chunk to viewers", lc.Pos)
 		v.ViewChunkLoad(lc.Pos, lc.Chunk)
+	}
+}
+
+// updateRainbowInventory cycles rainbow colors through the top row of each player's inventory
+func (w *World) updateRainbowInventory() {
+	rainbowColors := []int32{
+		209, // White Wool
+		210, // Orange Wool
+		211, // Magenta Wool
+		212, // Light Blue Wool
+		213, // Yellow Wool
+		214, // Lime Wool
+		215, // Pink Wool
+		216, // Gray Wool
+		217, // Light Gray Wool
+		218, // Cyan Wool
+		219, // Purple Wool
+		220, // Blue Wool
+		221, // Brown Wool
+		222, // Green Wool
+		223, // Red Wool
+		224, // Black Wool
+	}
+
+	for c, p := range w.players {
+		// Rotate colors for slots 9-17 (top inventory row)
+		for i := 9; i < 10; i++ {
+			colorIdx := (i - 9 + int(w.tickCount)) % len(rainbowColors)
+			p.Inventory[i] = &ItemStack{
+				ItemID: rainbowColors[colorIdx],
+				Count:  1,
+			}
+			c.SendSetPlayerInventorySlot(int32(i), p.Inventory[i])
+		}
 	}
 }

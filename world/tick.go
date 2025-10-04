@@ -63,6 +63,8 @@ func (w *World) tick(n uint) {
 	// 	}
 	// }
 
+	w.tickCount++
+
 	if n%8 == 0 {
 		w.subtickChunkLoad()
 	}
@@ -80,6 +82,10 @@ func (w *World) tick(n uint) {
 	// 		lc.Chunk.Sections[10].RotateSection(180, 180)
 	// 	}
 	// }
+
+	if n%17 == 0 {
+		w.updateRainbowInventory()
+	}
 
 	if n%16 == 0 {
 		for _, lc := range w.chunks {

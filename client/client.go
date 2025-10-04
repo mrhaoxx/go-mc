@@ -24,6 +24,7 @@ import (
 
 	"github.com/mrhaoxx/go-mc/chat"
 	"github.com/mrhaoxx/go-mc/data/packetid"
+	"github.com/mrhaoxx/go-mc/data/registryid"
 	"github.com/mrhaoxx/go-mc/level"
 	"github.com/mrhaoxx/go-mc/level/block"
 	"github.com/mrhaoxx/go-mc/net"
@@ -116,6 +117,16 @@ func (c *Client) AddHandler(id packetid.ServerboundPacketID, handler PacketHandl
 	c.handlers[id] = handler
 }
 func (c *Client) GetPlayer() *world.Player { return c.player }
+
+// itemIDToBlockState converts item ID to block state ID
+// For most blocks, the item ID matches the block state ID
+func itemIDToBlockState(itemID int32) block.Block {
+	// id to string
+	var name = registryid.Item[itemID]
+	// name to blockid
+	var blockID = block.FromID[name]
+	return blockID
+}
 
 var defaultHandlers = [packetid.ServerboundPacketIDGuard]PacketHandler{
 	packetid.ServerboundAcceptTeleportation:  clientAcceptTeleportation,
@@ -353,9 +364,18 @@ func clientUseItemOn(p pk.Packet, c *Client) error {
 		c.log.Debug("UseItemOn in not-loaded chunk", zap.Int("x", x), zap.Int("y", y), zap.Int("z", z))
 		return nil
 	}
-	// Place a stone block for now (no inventory system yet)
-	ck.SetBlock(x, y, z, level.BlocksState(c.player.CarriedSlot))
-	ck.UpdateToViewers()
+
+	// Get the item from the player's carried slot
+	if c.player.CarriedSlot >= 0 && c.player.CarriedSlot < 9 {
+		itemStack := c.player.Inventory[c.player.CarriedSlot]
+		if itemStack != nil {
+			// Convert item ID to block state ID
+			// For wool blocks, item ID = block state ID
+			blockStateID := itemIDToBlockState(itemStack.ItemID)
+			ck.SetBlock(x, y, z, level.BlocksState(block.ToStateID[blockStateID]))
+			ck.UpdateToViewers()
+		}
+	}
 	return nil
 }
 
@@ -409,20 +429,64 @@ func clientSetCarriedItem(p pk.Packet, c *Client) error {
 	return nil
 }
 
-// clientSetCreativeModeSlot handles creative inventory edits. For now we parse the
-// slot index and ignore item data (no full inventory system is implemented yet).
+// clientSetCreativeModeSlot handles creative inventory edits.
 // Slot numbering follows vanilla (hotbar 36..44).
 func clientSetCreativeModeSlot(p pk.Packet, c *Client) error {
 	var slot pk.Short
-	// Read only the slot index; leave remaining payload unparsed intentionally.
-	if err := p.Scan(&slot); err != nil {
+	var count pk.VarInt
+
+	if err := p.Scan(&slot, &count); err != nil {
 		return err
 	}
+
 	idx := int32(slot)
-	// Update carried slot if player edited a hotbar index, to keep placement simple.
-	if idx >= 36 && idx <= 44 {
-		c.player.CarriedSlot = idx - 36
+	if count > 0 {
+		var itemID pk.VarInt = 1
+		var nAdd pk.VarInt
+		var nDel pk.VarInt
+		if err := p.Scan(&slot, &count, &itemID, &nAdd, &nDel); err != nil {
+			return err
+		}
+
+		// Map slot index to inventory index
+		var invIdx int32
+		switch {
+		case idx >= 36 && idx <= 44: // Hotbar
+			invIdx = idx - 36
+		case idx >= 9 && idx <= 35: // Main inventory
+			invIdx = idx
+		default:
+			invIdx = idx
+		}
+
+		if invIdx >= 0 && invIdx < int32(len(c.player.Inventory)) {
+			c.player.Inventory[invIdx] = &world.ItemStack{
+				ItemID: int32(itemID),
+				Count:  byte(count),
+			}
+		}
+
+		// Update carried slot if player edited a hotbar index
+		if idx >= 36 && idx <= 44 {
+			c.player.CarriedSlot = idx - 36
+		}
+		c.log.Info("Client: SetCreativeModeSlot", zap.Int32("slot", idx), zap.Int32("itemID", int32(itemID)), zap.Int("nAdd", int(nAdd)), zap.Int("nDel", int(nDel)), zap.Int("count", int(count)), zap.String("name", c.player.Name))
+	} else {
+		// Empty slot
+		var invIdx int32
+		switch {
+		case idx >= 36 && idx <= 44:
+			invIdx = idx - 36
+		case idx >= 9 && idx <= 35:
+			invIdx = idx
+		default:
+			invIdx = idx
+		}
+
+		if invIdx >= 0 && invIdx < int32(len(c.player.Inventory)) {
+			c.player.Inventory[invIdx] = nil
+		}
+		c.log.Info("Client: SetCreativeModeSlot (empty)", zap.Int32("slot", idx), zap.String("name", c.player.Name))
 	}
-	c.log.Info("Client: SetCreativeModeSlot", zap.Int32("slot", idx), zap.String("name", c.player.Name))
 	return nil
 }

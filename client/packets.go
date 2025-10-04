@@ -332,6 +332,16 @@ func (c *Client) SendSetDefaultSpawnPosition(xyz [3]int32, angle float32) {
 	return
 }
 
+func (c *Client) SendSetPlayerInventorySlot(slot int32, stack *world.ItemStack) {
+	localStack := &ItemStack{
+		ItemID: stack.ItemID,
+		Count:  stack.Count,
+	}
+	fields := []pk.FieldEncoder{pk.VarInt(slot)}
+	fields = append(fields, localStack.encodeFields()...)
+	c.SendPacket(packetid.ClientboundSetPlayerInventory, fields...)
+}
+
 func (c *Client) SendRemoveEntities(entityIDs []int32) {
 	c.SendPacket(
 		packetid.ClientboundRemoveEntities,

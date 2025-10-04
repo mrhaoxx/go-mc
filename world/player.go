@@ -41,12 +41,12 @@ func (i *ClientInfo) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 type Player struct {
-    Entity
-    Name       string
-    UUID       uuid.UUID
-    PubKey     *user.PublicKey
-    Properties []user.Property
-    Latency    time.Duration
+	Entity
+	Name       string
+	UUID       uuid.UUID
+	PubKey     *user.PublicKey
+	Properties []user.Property
+	Latency    time.Duration
 
 	lastChatTimestamp time.Time
 	lastChatSignature []byte
@@ -54,14 +54,16 @@ type Player struct {
 	ChunkPos     [3]int32
 	ViewDistance int32
 
-    Gamemode       int32
-    EntitiesInView map[int32]*Entity
-    view           *playerViewNode
-    teleport       *TeleportRequest
-    // Currently selected hotbar slot (0-8)
-    CarriedSlot int32
+	Gamemode       int32
+	EntitiesInView map[int32]*Entity
+	view           *playerViewNode
+	teleport       *TeleportRequest
+	// Currently selected hotbar slot (0-8)
+	CarriedSlot int32
+	// Player inventory: slots 0-8 are hotbar, 9-35 are main inventory, 36-39 are armor, 40 is offhand
+	Inventory [36]*ItemStack
 
-    Inputs Inputs
+	Inputs Inputs
 }
 
 func (p *Player) chunkPosition() [2]int32 { return [2]int32{p.ChunkPos[0], p.ChunkPos[2]} }
